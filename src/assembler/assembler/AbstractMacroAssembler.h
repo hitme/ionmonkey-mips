@@ -420,8 +420,8 @@ public:
 
         bool isSet() const { return m_jmp.isSet(); }
 
-    private:
         JmpSrc m_jmp;
+    private:
     };
 
     // JumpList:
@@ -585,8 +585,9 @@ public:
         return AssemblerType::getDifferenceBetweenLabels(from.m_label, to.m_jmp);
     }
 
-protected:
+public:
     AssemblerType m_assembler;
+public:
 
     friend class LinkBuffer;
     friend class RepatchBuffer;

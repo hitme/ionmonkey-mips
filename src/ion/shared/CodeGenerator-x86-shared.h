@@ -94,12 +94,12 @@ class CodeGeneratorX86Shared : public CodeGeneratorShared
     virtual bool visitPowHalfD(LPowHalfD *ins);
     virtual bool visitAddI(LAddI *ins);
     virtual bool visitSubI(LSubI *ins);
+    virtual bool visitBitNotI(LBitNotI *ins);
+    virtual bool visitBitOpI(LBitOpI *ins);
     virtual bool visitMulI(LMulI *ins);
     virtual bool visitDivI(LDivI *ins);
     virtual bool visitModI(LModI *ins);
     virtual bool visitModPowTwoI(LModPowTwoI *ins);
-    virtual bool visitBitNotI(LBitNotI *ins);
-    virtual bool visitBitOpI(LBitOpI *ins);
     virtual bool visitShiftI(LShiftI *ins);
     virtual bool visitUrshD(LUrshD *ins);
     virtual bool visitMoveGroup(LMoveGroup *group);

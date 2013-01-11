@@ -65,9 +65,6 @@ static const FloatRegister InvalidFloatReg = { JSC::X86Registers::invalid_xmm };
 static const Register StackPointer = rsp;
 static const Register FramePointer = rbp;
 static const Register JSReturnReg = rcx;
-// Avoid, except for assertions.
-static const Register JSReturnReg_Type = JSReturnReg;
-static const Register JSReturnReg_Data = JSReturnReg;
 
 static const Register ReturnReg = rax;
 static const Register ScratchReg = r11;
@@ -82,45 +79,7 @@ static const Register CallTempReg3 = rcx;
 static const Register CallTempReg4 = rsi;
 static const Register CallTempReg5 = rdx;
 
-// Different argument registers for WIN64
-#if defined(_WIN64)
-static const Register IntArgReg0 = rcx;
-static const Register IntArgReg1 = rdx;
-static const Register IntArgReg2 = r8;
-static const Register IntArgReg3 = r9;
-static const uint32 NumIntArgRegs = 4;
-static const Register IntArgRegs[NumIntArgRegs] = { rcx, rdx, r8, r9 };
-
-static const FloatRegister FloatArgReg0 = xmm0;
-static const FloatRegister FloatArgReg1 = xmm1;
-static const FloatRegister FloatArgReg2 = xmm2;
-static const FloatRegister FloatArgReg3 = xmm3;
-static const uint32 NumFloatArgRegs = 4;
-static const FloatRegister FloatArgRegs[NumFloatArgRegs] = { xmm0, xmm1, xmm2, xmm3 };
-#else
-static const Register IntArgReg0 = rdi;
-static const Register IntArgReg1 = rsi;
-static const Register IntArgReg2 = rdx;
-static const Register IntArgReg3 = rcx;
-static const Register IntArgReg4 = r8;
-static const Register IntArgReg5 = r9;
-static const uint32 NumIntArgRegs = 6;
-static const Register IntArgRegs[NumIntArgRegs] = { rdi, rsi, rdx, rcx, r8, r9 };
-
-static const FloatRegister FloatArgReg0 = xmm0;
-static const FloatRegister FloatArgReg1 = xmm1;
-static const FloatRegister FloatArgReg2 = xmm2;
-static const FloatRegister FloatArgReg3 = xmm3;
-static const FloatRegister FloatArgReg4 = xmm4;
-static const FloatRegister FloatArgReg5 = xmm5;
-static const FloatRegister FloatArgReg6 = xmm6;
-static const FloatRegister FloatArgReg7 = xmm7;
-static const uint32 NumFloatArgRegs = 8;
-static const FloatRegister FloatArgRegs[NumFloatArgRegs] = { xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7 };
-#endif
-
 static const Register OsrFrameReg = IntArgReg3;
-
 static const Register PreBarrierReg = rdx;
 
 // GCC stack is aligned on 16 bytes, but we don't maintain the invariant in
@@ -141,8 +100,8 @@ class Operand
     };
 
     Kind kind_ : 3;
-    int32 base_ : 5;
     Scale scale_ : 3;
+    int32 base_ : 5;
     int32 disp_;
     int32 index_ : 5;
 
@@ -162,15 +121,15 @@ class Operand
     { }
     explicit Operand(const BaseIndex &address)
       : kind_(SCALE),
-        base_(address.base.code()),
         scale_(address.scale),
+        base_(address.base.code()),
         disp_(address.offset),
         index_(address.index.code())
     { }
     Operand(Register base, Register index, Scale scale, int32 disp = 0)
       : kind_(SCALE),
-        base_(base.code()),
         scale_(scale),
+        base_(base.code()),
         disp_(disp),
         index_(index.code())
     { }
@@ -217,6 +176,17 @@ class Operand
 namespace js {
 namespace ion {
 
+static inline void
+PatchJump(CodeLocationJump jump, CodeLocationLabel label)
+{
+    if (JSC::X86Assembler::canRelinkJump(jump.raw(), label.raw())) {
+        JSC::X86Assembler::setRel32(jump.raw(), label.raw());
+    } else {
+        JSC::X86Assembler::setRel32(jump.raw(), jump.jumpTableEntry());
+        Assembler::PatchJumpEntry(jump.jumpTableEntry(), label.raw());
+    }
+}
+
 // Return operand from a JS -> JS call.
 static const ValueOperand JSReturnOperand = ValueOperand(JSReturnReg);
 
@@ -262,6 +232,8 @@ class Assembler : public AssemblerX86Shared
   public:
     using AssemblerX86Shared::j;
     using AssemblerX86Shared::jmp;
+    // Do not mask shared implementations.
+    using AssemblerX86Shared::call;
     using AssemblerX86Shared::push;
 
     static uint8 *PatchableJumpAddress(IonCode *code, size_t index);
@@ -409,7 +381,6 @@ class Assembler : public AssemblerX86Shared
     void xorq(const Register &src, const Register &dest) {
         masm.xorq_rr(src.code(), dest.code());
     }
-
     void mov(ImmWord word, const Register &dest) {
         movq(word, dest);
     }
@@ -516,8 +487,6 @@ class Assembler : public AssemblerX86Shared
         addPendingJump(src, target->raw(), Relocation::IONCODE);
     }
 
-    // Do not mask shared implementations.
-    using AssemblerX86Shared::call;
 
     void cvttsd2sq(const FloatRegister &src, const Register &dest) {
         masm.cvttsd2sq_rr(src.code(), dest.code());
@@ -529,17 +498,6 @@ class Assembler : public AssemblerX86Shared
         masm.cvtsq2sd_rr(src.code(), dest.code());
     }
 };
-
-static inline void
-PatchJump(CodeLocationJump jump, CodeLocationLabel label)
-{
-    if (JSC::X86Assembler::canRelinkJump(jump.raw(), label.raw())) {
-        JSC::X86Assembler::setRel32(jump.raw(), label.raw());
-    } else {
-        JSC::X86Assembler::setRel32(jump.raw(), jump.jumpTableEntry());
-        Assembler::PatchJumpEntry(jump.jumpTableEntry(), label.raw());
-    }
-}
 
 static inline bool
 GetIntArgReg(uint32 intArg, uint32 floatArg, Register *out)

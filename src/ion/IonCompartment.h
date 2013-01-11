@@ -27,7 +27,7 @@ class IonBuilder;
 
 typedef Vector<IonBuilder*, 0, SystemAllocPolicy> OffThreadCompilationVector;
 
-class IonRuntime
+class IonRuntime//client:Ion.cpp
 {
     friend class IonCompartment;
 

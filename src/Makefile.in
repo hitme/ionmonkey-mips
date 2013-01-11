@@ -368,6 +368,20 @@ CPPSRCS +=	Lowering-arm.cpp \
 		$(NULL)
 endif #ENABLE_ION
 endif
+ifeq (mips, $(findstring mips, $(TARGET_CPU)))
+ifdef ENABLE_ION
+VPATH +=	$(srcdir)/ion/mips
+CPPSRCS +=	Lowering-mips.cpp \
+		CodeGenerator-mips.cpp \
+		Trampoline-mips.cpp \
+		Assembler-mips.cpp \
+		Bailouts-mips.cpp \
+		IonFrames-mips.cpp \
+		MoveEmitter-mips.cpp \
+		MacroAssembler-mips.cpp \
+		$(NULL)
+endif #ENABLE_ION
+endif
 endif #ENABLE_ION
 ifeq (sparc, $(findstring sparc,$(TARGET_CPU)))
 ASFILES +=	TrampolineSparc.s

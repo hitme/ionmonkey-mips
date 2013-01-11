@@ -1201,7 +1201,9 @@ class AssemblerX86Shared
     // Toggle a jmp or cmp emitted by toggledJump().
     static void ToggleToJmp(CodeLocationLabel inst) {
         uint8_t *ptr = (uint8_t *)inst.raw();
+        //CMP AX,imm16
         JS_ASSERT(*ptr == 0x3D);
+        //JMP rel32
         *ptr = 0xE9;
     }
     static void ToggleToCmp(CodeLocationLabel inst) {

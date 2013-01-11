@@ -21,13 +21,14 @@ class LIRGeneratorX64 : public LIRGeneratorX86Shared
     { }
 
   protected:
-    void lowerUntypedPhiInput(MPhi *phi, uint32 inputPosition, LBlock *block, size_t lirIndex);
-    bool defineUntypedPhi(MPhi *phi, size_t lirIndex);
 
     // Adds a use at operand |n| of a value-typed insturction.
     bool useBox(LInstruction *lir, size_t n, MDefinition *mir,
                 LUse::Policy policy = LUse::REGISTER, bool useAtStart = false);
     bool useBoxFixed(LInstruction *lir, size_t n, MDefinition *mir, Register reg1, Register);
+
+    void lowerUntypedPhiInput(MPhi *phi, uint32 inputPosition, LBlock *block, size_t lirIndex);
+    bool defineUntypedPhi(MPhi *phi, size_t lirIndex);
 
     bool lowerForShift(LInstructionHelper<1, 2, 0> *ins, MDefinition *mir, MDefinition *lhs,
                        MDefinition *rhs);

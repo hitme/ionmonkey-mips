@@ -12,6 +12,8 @@
 # include "ion/shared/MoveEmitter-x86-shared.h"
 #elif defined(JS_CPU_ARM)
 # include "ion/arm/MoveEmitter-arm.h"
+#elif defined(JS_CPU_MIPS)
+# include "ion/mips/MoveEmitter-mips.h"
 #else
 # error "CPU Not Supported"
 #endif

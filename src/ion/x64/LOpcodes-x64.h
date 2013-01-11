@@ -9,9 +9,10 @@
 #define jsion_lir_opcodes_x64_h__
 
 #define LIR_CPU_OPCODE_LIST(_)      \
-    _(Box)                          \
     _(Unbox)                        \
     _(UnboxDouble)                  \
+    _(Box)                          \
+\
     _(DivI)                         \
     _(ModI)                         \
     _(ModPowTwoI)                   \

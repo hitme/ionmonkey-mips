@@ -103,6 +103,8 @@ class IonCache
     // Offset from the initial jump to the rejoin label.
 #ifdef JS_CPU_ARM
     static const size_t REJOIN_LABEL_OFFSET = 4;
+#elif  defined(JS_CPU_MIPS)
+    static const size_t REJOIN_LABEL_OFFSET = 4;
 #else
     static const size_t REJOIN_LABEL_OFFSET = 0;
 #endif
@@ -174,6 +176,12 @@ class IonCache
     CodeLocationLabel rejoinLabel() const {
         uint8 *ptr = initialJump_.raw();
 #ifdef JS_CPU_ARM
+        uint32 i = 0;
+        while (i < REJOIN_LABEL_OFFSET)
+            ptr = Assembler::nextInstruction(ptr, &i);
+#endif
+//#ifdef JS_CPU_MIPS
+#if 0
         uint32 i = 0;
         while (i < REJOIN_LABEL_OFFSET)
             ptr = Assembler::nextInstruction(ptr, &i);

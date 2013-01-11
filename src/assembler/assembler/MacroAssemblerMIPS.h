@@ -27,10 +27,12 @@
 #ifndef MacroAssemblerMIPS_h
 #define MacroAssemblerMIPS_h
 
-#if ENABLE(ASSEMBLER) && CPU(MIPS)
+#include "assembler/wtf/Platform.h"
 
-#include "AbstractMacroAssembler.h"
+#if ENABLE_ASSEMBLER && WTF_CPU_MIPS
+
 #include "MIPSAssembler.h"
+#include "AbstractMacroAssembler.h"
 
 namespace JSC {
 
@@ -324,6 +326,14 @@ public:
         }
     }
 
+    void and32(TrustedImm32 imm, Address address)
+    {
+        move(imm, dataTempRegister);
+        load32(address, dataTemp2Register);
+        m_assembler.andInsn(dataTemp2Register, dataTemp2Register, dataTempRegister);
+        store32(dataTemp2Register, address);
+    }   
+
     void lshift32(TrustedImm32 imm, RegisterID dest)
     {
         m_assembler.sll(dest, dest, imm.m_value);
@@ -337,6 +347,18 @@ public:
     void mul32(RegisterID src, RegisterID dest)
     {
         m_assembler.mul(dest, dest, src);
+    }
+
+    void mul32(Address src, RegisterID dest)
+    {
+        load32(src, dataTempRegister);
+        m_assembler.mul(dest, dest, dataTempRegister);
+    }
+
+    void mul32(TrustedImm32 src, RegisterID dest)
+    {
+        move(src, dataTempRegister);
+        m_assembler.mul(dest, dest, dataTempRegister);
     }
 
     void mul32(TrustedImm32 imm, RegisterID src, RegisterID dest)
@@ -360,9 +382,23 @@ public:
         m_assembler.subu(srcDest, MIPSRegisters::zero, srcDest);
     }
 
+    void neg32(Address srcDest)
+    {
+        load32(srcDest, dataTempRegister);
+        neg32(dataTempRegister);
+        store32(dataTempRegister, srcDest);
+    }
+
     void not32(RegisterID srcDest)
     {
         m_assembler.nor(srcDest, srcDest, MIPSRegisters::zero);
+    }
+
+    void not32(Address srcDest)
+    {
+        load32(srcDest, dataTempRegister);
+        not32(dataTempRegister);
+        store32(dataTempRegister, srcDest);
     }
 
     void or32(Address src, RegisterID dest)
@@ -394,6 +430,14 @@ public:
         move(imm, dataTempRegister);
         m_assembler.orInsn(dest, dest, dataTempRegister);
     }
+
+    void or32(TrustedImm32 imm, Address address)
+    {
+        move(imm, dataTempRegister);
+        load32(address, dataTemp2Register);
+        m_assembler.orInsn(dataTemp2Register, dataTemp2Register, dataTempRegister);
+        store32(dataTemp2Register, address);
+    }   
 
     void rshift32(RegisterID shiftAmount, RegisterID dest)
     {
@@ -537,6 +581,19 @@ public:
         m_assembler.xorInsn(dest, dest, immTempRegister);
     }
 
+    void xor32(TrustedImm32 imm, Address address)
+    {
+        move(imm, dataTempRegister);
+        load32(address, dataTemp2Register);
+        m_assembler.xorInsn(dataTemp2Register, dataTemp2Register, dataTempRegister);
+        store32(dataTemp2Register, address);
+    }   
+
+    void load16Unaligned(BaseIndex address, RegisterID dest)
+    {
+        load16(address, dest);
+    }
+   
     void load16SignExtend(ImplicitAddress address, RegisterID dest)
     {
         if (address.offset >= -32768 && address.offset <= 32767
@@ -605,6 +662,7 @@ public:
         if (address.offset >= -32768 && address.offset <= 32767
             && !m_fixedWidth) {
             /*
+
                 sll     addrTemp, address.index, address.scale
                 addu    addrTemp, addrTemp, address.base
                 lhu     dest, address.offset(addrTemp)
@@ -736,6 +794,11 @@ public:
         m_assembler.sqrtd(dst, src);
     }
 
+    void floorDouble(FPRegisterID src, FPRegisterID dst)
+    {
+        m_assembler.floorwd(dst, src);
+    }
+
     // Memory access operations:
     //
     // Loads are of the form load(address, destination) and stores of the form
@@ -759,6 +822,11 @@ public:
             m_assembler.addu(addrTempRegister, addrTempRegister, address.base);
             m_assembler.lbu(dest, addrTempRegister, address.offset);
         }
+    }
+
+    void load8(BaseIndex address, RegisterID dest)
+    {
+        load8ZeroExtend(address, dest);
     }
 
     void load32(ImplicitAddress address, RegisterID dest)
@@ -1996,6 +2064,13 @@ public:
         m_assembler.nop();
     }
 
+    void ret(int imm)
+    {
+        move(TrustedImm32(imm), MIPSRegisters::ra);
+        m_assembler.jr(MIPSRegisters::ra);
+        m_assembler.nop();
+    }
+
     void set8(Condition cond, RegisterID left, RegisterID right, RegisterID dest)
     {
         set32(cond, left, right, dest);
@@ -2246,7 +2321,7 @@ public:
 
     void loadFloat(BaseIndex address, FPRegisterID dest)
     {
-        if (address.offset >= -32768 && address.offset <= 32767
+      if (address.offset >= -32768 && address.offset <= 32767
             && !m_fixedWidth) {
             /*
                 sll     addrTemp, address.index, address.scale
@@ -2335,6 +2410,7 @@ public:
             m_assembler.lwc1(dest, addrTempRegister, address.offset);
             m_assembler.lwc1(FPRegisterID(dest + 1), addrTempRegister, address.offset + 4);
         } else {
+            /*
                 sll     addrTemp, address.index, address.scale
                 addu    addrTemp, addrTemp, address.base
                 li      immTemp, address.offset
@@ -2349,6 +2425,7 @@ public:
                              immTempRegister);
             m_assembler.lwc1(dest, addrTempRegister, 0);
             m_assembler.lwc1(FPRegisterID(dest + 1), addrTempRegister, 4);
+	}
 #else
         if (address.offset >= -32768 && address.offset <= 32767
             && !m_fixedWidth) {
@@ -2516,6 +2593,12 @@ public:
         m_assembler.addd(dest, dest, fpTempRegister);
     }
 
+    void addDouble(const void* src, FPRegisterID dest)
+    {
+        loadDouble(src, fpTempRegister);
+        m_assembler.addd(dest, dest, fpTempRegister);
+    }
+
     void subDouble(FPRegisterID src, FPRegisterID dest)
     {
         m_assembler.subd(dest, dest, src);
@@ -2541,6 +2624,12 @@ public:
     void divDouble(FPRegisterID src, FPRegisterID dest)
     {
         m_assembler.divd(dest, dest, src);
+    }
+
+    void divDouble(Address src, FPRegisterID dest)
+    {
+        loadDouble(src, fpTempRegister);
+        m_assembler.divd(dest, dest, fpTempRegister);
     }
 
     void convertUInt32ToDouble(RegisterID src, FPRegisterID dest)
@@ -2579,6 +2668,13 @@ public:
     }
 
     void convertInt32ToDouble(Address src, FPRegisterID dest)
+    {
+        load32(src, dataTempRegister);
+        m_assembler.mtc1(dataTempRegister, fpTempRegister);
+        m_assembler.cvtdw(dest, fpTempRegister);
+    }
+
+    void convertInt32ToDouble(BaseIndex src, FPRegisterID dest)
     {
         load32(src, dataTempRegister);
         m_assembler.mtc1(dataTempRegister, fpTempRegister);
@@ -2662,6 +2758,11 @@ public:
     void convertDoubleToFloat(FPRegisterID src, FPRegisterID dest)
     {
         m_assembler.cvtsd(dest, src);
+    }
+
+    void convertFloatToDouble(FPRegisterID src, FPRegisterID dest)
+    {
+        m_assembler.cvtds(dest, src);
     }
 
     Jump branchDouble(DoubleCondition cond, FPRegisterID left, FPRegisterID right)
@@ -2757,6 +2858,16 @@ public:
         m_assembler.mtc1(MIPSRegisters::zero, FPRegisterID(dest + 1));
 #endif
     }
+
+    //ion helper
+    void truncateDoubleToInt32(FPRegisterID src, RegisterID dest)
+    {
+        m_assembler.truncwd(fpTempRegister, src);
+        m_assembler.mfc1(dest, fpTempRegister);
+    }
+    
+public:
+    AssemblerType_T& assembler(){ return m_assembler; }
 
 private:
     // If m_fixedWidth is true, we will generate a fixed number of instructions.

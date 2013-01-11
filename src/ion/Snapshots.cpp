@@ -188,7 +188,7 @@ static const uint32 MAX_TYPE_FIELD_VALUE = 7;
 static const uint32 MAX_REG_FIELD_VALUE  = 31;
 static const uint32 ESC_REG_FIELD_INDEX  = 31;
 static const uint32 ESC_REG_FIELD_CONST  = 30;
-static const uint32 MIN_REG_FIELD_ESC    = 30;
+static const uint32 MIN_REG_FIELD_ESC    = 33;//TBD
 
 SnapshotReader::Slot
 SnapshotReader::readSlot()

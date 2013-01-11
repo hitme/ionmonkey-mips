@@ -30,7 +30,7 @@ template <class ArgSeq, class StoreOutputTo>
 class OutOfLineCallVM;
 class OutOfLineTruncateSlow;
 
-class CodeGeneratorShared : public LInstructionVisitor
+class CodeGeneratorShared : public LInstructionVisitor//client:LIR.h
 {
     js::Vector<OutOfLineCode *, 0, SystemAllocPolicy> outOfLineCode_;
     OutOfLineCode *oolIns;

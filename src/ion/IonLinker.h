@@ -30,7 +30,7 @@ class Linker
 
     IonCode *newCode(JSContext *cx, IonCompartment *comp) {
         AssertCanGC();
-#ifndef JS_CPU_ARM
+#if !defined(JS_CPU_ARM) || !defined(JS_CPU_MIPS)
         masm.flush();
 #endif
         if (masm.oom())

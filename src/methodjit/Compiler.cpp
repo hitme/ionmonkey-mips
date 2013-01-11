@@ -4027,7 +4027,7 @@ mjit::Compiler::ionCompileHelper()
 
     Label secondTest = stubcc.masm.label();
 
-#if defined(JS_CPU_X86) || defined(JS_CPU_ARM)
+#if defined(JS_CPU_X86) || defined(JS_CPU_ARM) || defined(JS_CPU_MIPS)
     trigger.inlineJump = masm.branch32(Assembler::GreaterThanOrEqual,
                                        AbsoluteAddress(useCountAddress),
                                        Imm32(minUses));
@@ -4075,7 +4075,7 @@ mjit::Compiler::inliningCompileHelper()
 
     uint32_t *addr = script_->addressOfUseCount();
     masm.add32(Imm32(1), AbsoluteAddress(addr));
-#if defined(JS_CPU_X86) || defined(JS_CPU_ARM)
+#if defined(JS_CPU_X86) || defined(JS_CPU_ARM) || defined(JS_CPU_ARM)
     Jump jump = masm.branch32(Assembler::GreaterThanOrEqual, AbsoluteAddress(addr),
                               Imm32(USES_BEFORE_INLINING));
 #else
@@ -7443,7 +7443,7 @@ mjit::Compiler::constructThis()
 bool
 mjit::Compiler::jsop_tableswitch(jsbytecode *pc)
 {
-#if defined JS_CPU_ARM
+#if defined JS_CPU_ARM //|| defined JS_CPU_MIPS
     JS_NOT_REACHED("Implement jump(BaseIndex) for ARM");
     return true;
 #else

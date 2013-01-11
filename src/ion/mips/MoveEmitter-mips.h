@@ -5,8 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef jsion_move_resolver_arm_shared_h__
-#define jsion_move_resolver_arm_shared_h__
+#ifndef jsion_move_resolver_mips_h__
+#define jsion_move_resolver_mips_h__
 
 #include "ion/MoveResolver.h"
 #include "ion/IonMacroAssembler.h"
@@ -16,13 +16,13 @@ namespace ion {
 
 class CodeGenerator;
 
-class MoveEmitterARM
+class MoveEmitterMIPS
 {
     typedef MoveResolver::Move Move;
     typedef MoveResolver::MoveOperand MoveOperand;
 
     bool inCycle_;
-    MacroAssemblerARMCompat &masm;
+    MacroAssemblerSpecific &masm;
 
     // Original stack push value.
     uint32 pushedAtStart_;
@@ -32,21 +32,17 @@ class MoveEmitterARM
     // stack space has been allocated for that particular spill.
     int32 pushedAtCycle_;
     int32 pushedAtSpill_;
-    int32 pushedAtDoubleSpill_;
 
-    // These are registers that are available for temporary use. They may be
-    // assigned InvalidReg. If no corresponding spill space has been assigned,
-    // then these registers do not need to be spilled.
+    // Register that is available for temporary use. It may be assigned
+    // InvalidReg. If no corresponding spill space has been assigned,
+    // then this register do not need to be spilled.
     Register spilledReg_;
-    FloatRegister spilledFloatReg_;
 
     void assertDone();
     Register tempReg();
-    FloatRegister tempFloatReg();
     Operand cycleSlot() const;
     Operand spillSlot() const;
-    Operand toOperand(const MoveOperand &operand, bool isFloat) const;
-    Operand doubleSpillSlot() const;
+    Operand toOperand(const MoveOperand &operand) const;
 
     void emitMove(const MoveOperand &from, const MoveOperand &to);
     void emitDoubleMove(const MoveOperand &from, const MoveOperand &to);
@@ -55,16 +51,17 @@ class MoveEmitterARM
     void emit(const Move &move);
 
   public:
-    MoveEmitterARM(MacroAssemblerARMCompat &masm);
-    ~MoveEmitterARM();
+    MoveEmitterMIPS(MacroAssemblerSpecific &masm);
+    ~MoveEmitterMIPS();
     void emit(const MoveResolver &moves);
     void finish();
 };
 
-typedef MoveEmitterARM MoveEmitter;
+typedef MoveEmitterMIPS MoveEmitter;
 
-} // namespace ion
-} // namespace js
+} // ion
+} // js
 
-#endif // jsion_move_resolver_arm_shared_h__
+#endif // jsion_move_resolver_x86_shared_h__
+
 

@@ -14,6 +14,8 @@
 # include "ion/x64/MacroAssembler-x64.h"
 #elif defined(JS_CPU_ARM)
 # include "ion/arm/MacroAssembler-arm.h"
+#elif defined(JS_CPU_MIPS)
+# include "ion/mips/MacroAssembler-mips.h"
 #endif
 #include "ion/IonCompartment.h"
 #include "ion/IonInstrumentation.h"
@@ -29,7 +31,7 @@ namespace ion {
 // The public entrypoint for emitting assembly. Note that a MacroAssembler can
 // use cx->lifoAlloc, so take care not to interleave masm use with other
 // lifoAlloc use if one will be destroyed before the other.
-class MacroAssembler : public MacroAssemblerSpecific
+class MacroAssembler : public MacroAssemblerSpecific//clients:across ion
 {
     MacroAssembler *thisFromCtor() {
         return this;
@@ -80,6 +82,8 @@ class MacroAssembler : public MacroAssemblerSpecific
             alloc_.construct(cx);
 #ifdef JS_CPU_ARM
         m_buffer.id = GetIonContext()->getNextAssemblerId();
+#elif defined(JS_CPU_MIPS)
+        //TBD
 #endif
     }
 
@@ -94,6 +98,8 @@ class MacroAssembler : public MacroAssemblerSpecific
         alloc_.construct(cx);
 #ifdef JS_CPU_ARM
         m_buffer.id = GetIonContext()->getNextAssemblerId();
+#elif defined(JS_CPU_MIPS)
+        //TBD
 #endif
     }
 

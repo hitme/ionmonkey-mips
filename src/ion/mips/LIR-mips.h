@@ -5,10 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef jsion_lir_arm_h__
-#define jsion_lir_arm_h__
-
-#include "ion/TypeOracle.h"
+#ifndef jsion_lir_mips_h__
+#define jsion_lir_mips_h__
 
 namespace js {
 namespace ion {
@@ -81,100 +79,76 @@ class LDouble : public LInstructionHelper<1, 1, 0>
     }
 };
 
-// LDivI is presently implemented as a proper C function,
-// so it trashes r0, r1, r2 and r3.  The call also trashes lr, and has the
-// ability to trash ip. The function also takes two arguments (dividend in r0,
-// divisor in r1). The LInstruction gets encoded such that the divisor and
-// dividend are passed in their apropriate registers, and are marked as copy
-// so we can modify them (and the function will).
-// The other thre registers that can be trashed are marked as such. For the time
-// being, the link register is not marked as trashed because we never allocate
-// to the link register.
-class LDivI : public LBinaryMath<2>
+class LDivI : public LBinaryMath<1>
 {
   public:
     LIR_HEADER(DivI);
 
-    LDivI(const LAllocation &lhs, const LAllocation &rhs,
-          const LDefinition &temp1, const LDefinition &temp2) {
+    LDivI(const LAllocation &lhs, const LAllocation &rhs, const LDefinition &temp) {
         setOperand(0, lhs);
         setOperand(1, rhs);
-        setTemp(0, temp1);
-        setTemp(1, temp2);
+        setTemp(0, temp);
     }
 
+    const LDefinition *remainder() {
+        return getTemp(0);
+    }
     MDiv *mir() const {
         return mir_->toDiv();
     }
 };
 
-class LModI : public LBinaryMath<3>
+class LModI : public LBinaryMath<1>
 {
   public:
     LIR_HEADER(ModI);
 
-    LModI(const LAllocation &lhs, const LAllocation &rhs,
-          const LDefinition &temp1, const LDefinition &temp2,
-          const LDefinition &callTemp)
-    {
+    LModI(const LAllocation &lhs, const LAllocation &rhs) {
         setOperand(0, lhs);
         setOperand(1, rhs);
-        setTemp(0, temp1);
-        setTemp(1, temp2);
-        setTemp(2, callTemp);
+    }
+
+    const LDefinition *remainder() {
+        return getDef(0);
     }
 };
 
-
-class LModPowTwoI : public LInstructionHelper<1, 1, 0>
+class LModPowTwoI : public LInstructionHelper<1,1,0>
 {
     const int32 shift_;
 
   public:
     LIR_HEADER(ModPowTwoI);
-    int32 shift()
-    {
-        return shift_;
-    }
 
     LModPowTwoI(const LAllocation &lhs, int32 shift)
       : shift_(shift)
     {
         setOperand(0, lhs);
     }
-};
-
-
-
-class LModMaskI : public LInstructionHelper<1, 1, 1>
-{
-    const int32 shift_;
-
-  public:
-    LIR_HEADER(ModMaskI);
-
-    LModMaskI(const LAllocation &lhs, const LDefinition &temp1, int32 shift)
-      : shift_(shift)
-    {
-        setOperand(0, lhs);
-        setTemp(0, temp1);
-    }
 
     int32 shift() const {
         return shift_;
     }
+    const LDefinition *remainder() {
+        return getDef(0);
+    }
 };
 
-class LPowHalfD : public LInstructionHelper<1, 1, 0>
+// Double raised to a half power.
+class LPowHalfD : public LInstructionHelper<1, 1, 1>
 {
   public:
     LIR_HEADER(PowHalfD);
-    LPowHalfD(const LAllocation &input) {
+    LPowHalfD(const LAllocation &input, const LDefinition &temp) {
         setOperand(0, input);
+        setTemp(0, temp);
     }
 
     const LAllocation *input() {
         return getOperand(0);
+    }
+    const LDefinition *temp() {
+        return getTemp(0);
     }
     const LDefinition *output() {
         return getDef(0);
@@ -182,14 +156,17 @@ class LPowHalfD : public LInstructionHelper<1, 1, 0>
 };
 
 // Takes a tableswitch with an integer to decide
-class LTableSwitch : public LInstructionHelper<0, 1, 1>
+class LTableSwitch : public LInstructionHelper<0, 1, 2>
 {
   public:
     LIR_HEADER(TableSwitch);
 
-    LTableSwitch(const LAllocation &in, const LDefinition &inputCopy, MTableSwitch *ins) {
+    LTableSwitch(const LAllocation &in, const LDefinition &inputCopy,
+                 const LDefinition &jumpTablePointer, MTableSwitch *ins)
+    {
         setOperand(0, in);
         setTemp(0, inputCopy);
+        setTemp(1, jumpTablePointer);
         setMir(ins);
     }
 
@@ -203,23 +180,23 @@ class LTableSwitch : public LInstructionHelper<0, 1, 1>
     const LAllocation *tempInt() {
         return getTemp(0)->output();
     }
-    // This is added to share the same CodeGenerator prefixes.
     const LAllocation *tempPointer() {
-        return NULL;
+        return getTemp(1)->output();
     }
 };
 
-// Takes a tableswitch with an integer to decide
-class LTableSwitchV : public LInstructionHelper<0, BOX_PIECES, 2>
+// Takes a tableswitch with a value to decide
+class LTableSwitchV : public LInstructionHelper<0, BOX_PIECES, 3>
 {
   public:
     LIR_HEADER(TableSwitchV);
 
     LTableSwitchV(const LDefinition &inputCopy, const LDefinition &floatCopy,
-                  MTableSwitch *ins)
+                  const LDefinition &jumpTablePointer, MTableSwitch *ins)
     {
         setTemp(0, inputCopy);
         setTemp(1, floatCopy);
+        setTemp(2, jumpTablePointer);
         setMir(ins);
     }
 
@@ -236,39 +213,29 @@ class LTableSwitchV : public LInstructionHelper<0, BOX_PIECES, 2>
         return getTemp(1)->output();
     }
     const LAllocation *tempPointer() {
-        return NULL;
+        return getTemp(2)->output();
     }
 };
 
 // Guard against an object's shape.
-class LGuardShape : public LInstructionHelper<0, 1, 1>
+class LGuardShape : public LInstructionHelper<0, 1, 0>
 {
   public:
     LIR_HEADER(GuardShape);
 
-    LGuardShape(const LAllocation &in, const LDefinition &temp) {
+    LGuardShape(const LAllocation &in) {
         setOperand(0, in);
-        setTemp(0, temp);
     }
     const MGuardShape *mir() const {
         return mir_->toGuardShape();
     }
-    const LAllocation *tempInt() {
-        return getTemp(0)->output();
-    }
 };
 
-class LRecompileCheck : public LInstructionHelper<0, 0, 1>
+class LRecompileCheck : public LInstructionHelper<0, 0, 0>
 {
   public:
     LIR_HEADER(RecompileCheck);
 
-    LRecompileCheck(const LDefinition &temp) {
-        setTemp(0, temp);
-    }
-    const LAllocation *tempInt() {
-        return getTemp(0)->output();
-    }
     const MRecompileCheck *mir() const {
         return mir_->toRecompileCheck();
     }
@@ -280,17 +247,28 @@ class LInterruptCheck : public LInstructionHelper<0, 0, 0>
     LIR_HEADER(InterruptCheck);
 };
 
-class LMulI : public LBinaryMath<0>
+class LMulI : public LBinaryMath<0, 1>
 {
   public:
     LIR_HEADER(MulI);
 
+    LMulI(const LAllocation &lhs, const LAllocation &rhs, const LAllocation &lhsCopy) {
+        setOperand(0, lhs);
+        setOperand(1, rhs);
+        setOperand(2, lhsCopy);
+    }
+
     MMul *mir() {
         return mir_->toMul();
+    }
+    const LAllocation *lhsCopy() {
+        return this->getOperand(2);
     }
 };
 
 } // namespace ion
 } // namespace js
 
-#endif // jsion_lir_arm_h__
+#endif // jsion_lir_x86_shared_h__
+
+

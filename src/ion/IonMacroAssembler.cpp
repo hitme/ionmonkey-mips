@@ -297,6 +297,8 @@ MacroAssembler::clampDoubleToUint8(FloatRegister input, Register output)
     // and it should be even.
     ma_bic(Imm32(1), output, NoSetCond, Zero);
     bind(&notSplit);
+#elif defined(JS_CPU_MIPS)
+    //TBD
 #else
 
     Label positive, done;

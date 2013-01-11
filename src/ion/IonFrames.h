@@ -262,6 +262,8 @@ MakeFrameDescriptor(uint32 frameSize, FrameType type)
 # include "ion/shared/IonFrames-x86-shared.h"
 #elif defined (JS_CPU_ARM)
 # include "ion/arm/IonFrames-arm.h"
+#elif defined (JS_CPU_MIPS)
+# include "ion/mips/IonFrames-mips.h"
 #else
 # error "unsupported architecture"
 #endif

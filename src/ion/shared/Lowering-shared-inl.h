@@ -288,6 +288,18 @@ LIRGeneratorShared::useAny(MDefinition *mir)
 {
     return useRegister(mir);
 }
+#elif defined(JS_CPU_MIPS)
+LAllocation
+LIRGeneratorShared::useAnyOrConstant(MDefinition *mir)
+{
+    return useRegisterOrConstant(mir);
+}
+
+LAllocation
+LIRGeneratorShared::useAny(MDefinition *mir)
+{
+    return useRegister(mir);
+}
 #else
 LAllocation
 LIRGeneratorShared::useAnyOrConstant(MDefinition *mir)

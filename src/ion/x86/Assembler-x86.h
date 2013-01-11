@@ -39,10 +39,10 @@ static const FloatRegister xmm7 = { JSC::X86Registers::xmm7 };
 static const Register InvalidReg = { JSC::X86Registers::invalid_reg };
 static const FloatRegister InvalidFloatReg = { JSC::X86Registers::invalid_xmm };
 
-static const Register JSReturnReg_Type = ecx;
-static const Register JSReturnReg_Data = edx;
 static const Register StackPointer = esp;
 static const Register FramePointer = ebp;
+static const Register JSReturnReg_Type = ecx;
+static const Register JSReturnReg_Data = edx;
 static const Register ReturnReg = eax;
 static const FloatRegister ReturnFloatReg = xmm0;
 static const FloatRegister ScratchFloatReg = xmm7;
@@ -63,6 +63,7 @@ static const Register PreBarrierReg = edx;
 static const uint32 StackAlignment = 16;
 static const bool StackKeptAligned = false;
 
+static const Scale ScalePointer = TimesFour;
 struct ImmTag : public Imm32
 {
     ImmTag(JSValueTag mask)
@@ -77,7 +78,6 @@ struct ImmType : public ImmTag
     { }
 };
 
-static const Scale ScalePointer = TimesFour;
 
 class Operand
 {

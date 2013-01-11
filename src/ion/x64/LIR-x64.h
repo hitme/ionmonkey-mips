@@ -37,14 +37,14 @@ class LBox : public LInstructionHelper<1, 1, 0>
 class LUnboxBase : public LInstructionHelper<1, 1, 0>
 {
   public:
-    LUnboxBase(const LAllocation &input) {
-        setOperand(0, input);
+    lunboxbase(const lallocation &input) {
+        setoperand(0, input);
     }
 
-    static const size_t Input = 0;
+    static const size_t input = 0;
 
-    MUnbox *mir() const {
-        return mir_->toUnbox();
+    munbox *mir() const {
+        return mir_->tounbox();
     }
 };
 
