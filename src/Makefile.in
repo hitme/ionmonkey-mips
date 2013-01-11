@@ -442,6 +442,7 @@ VPATH += 	$(srcdir)/assembler/assembler \
 		$(NONE)
 
 CPPSRCS +=	ARMAssembler.cpp \
+		MIPSAssembler.cpp \
 		MacroAssemblerARM.cpp \
 		MacroAssemblerX86Common.cpp \
 		YarrJIT.cpp \
@@ -950,6 +951,7 @@ TESTMAIN_OBJS = \
 		Assertions.$(OBJ_SUFFIX) \
 		ExecutableAllocator.$(OBJ_SUFFIX) \
 		ARMAssembler.$(OBJ_SUFFIX) \
+		MIPSAssembler.$(OBJ_SUFFIX) \
 		MacroAssemblerARM.$(OBJ_SUFFIX) \
 		TestMain.$(OBJ_SUFFIX) \
 		jsutil.$(OBJ_SUFFIX) \
