@@ -36,7 +36,7 @@
 
 namespace JSC {
 
-    static void MIPSAssembler::setRel32(void* from, void* to)
+    void MIPSAssembler::setRel32(void* from, void* to)
     {
         intptr_t offset = reinterpret_cast<intptr_t>(to) - reinterpret_cast<intptr_t>(from);
         ASSERT(offset == static_cast<int32_t>(offset));
@@ -49,7 +49,7 @@ namespace JSC {
         setInt32(from, offset);
     }
 
-    static unsigned MIPSAssembler::getCallReturnOffset(JmpSrc call)
+    unsigned MIPSAssembler::getCallReturnOffset(JmpSrc call)
     {
         // The return address is after a call and a delay slot instruction
         return call.m_offset;
@@ -181,7 +181,7 @@ namespace JSC {
         }
     }
 
-    static void MIPSAssembler::linkJump(void* code, JmpSrc from, void* to)
+    void MIPSAssembler::linkJump(void* code, JmpSrc from, void* to)
     {
         ASSERT(from.m_offset != -1);
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(code) + from.m_offset);
@@ -198,12 +198,12 @@ namespace JSC {
         }
     }
 
-    static bool MIPSAssembler::canRelinkJump(void* from, void* to)
+    bool MIPSAssembler::canRelinkJump(void* from, void* to)
     {
         return true;
     }
 
-    static void MIPSAssembler::linkCall(void* code, JmpSrc from, void* to)
+    void MIPSAssembler::linkCall(void* code, JmpSrc from, void* to)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(code) + from.m_offset);
         ASSERT((((*(insn - 2) & 0xfc000000) == 0x0c000000) && !(*(insn - 3)) && !(*(insn - 4))) || 
@@ -211,7 +211,7 @@ namespace JSC {
         linkCallInternal(insn, to);
     }
 
-    static void MIPSAssembler::linkPointer(void* code, JmpDst from, void* to)
+    void MIPSAssembler::linkPointer(void* code, JmpDst from, void* to)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(code) + from.m_offset);
         ASSERT((*insn & 0xffe00000) == 0x3c000000); // lui
@@ -221,7 +221,7 @@ namespace JSC {
         *insn = (*insn & 0xffff0000) | (reinterpret_cast<intptr_t>(to) & 0xffff);
     }
 
-    static void MIPSAssembler::relinkJump(void* from, void* to)
+    void MIPSAssembler::relinkJump(void* from, void* to)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(from);
 
@@ -240,7 +240,7 @@ namespace JSC {
         ExecutableAllocator::cacheFlush(insn, flushSize);
     }
 
-    static void MIPSAssembler::relinkCall(void* from, void* to)
+    void MIPSAssembler::relinkCall(void* from, void* to)
     {
         void* start;
         int size = linkCallInternal(from, to);
@@ -252,7 +252,7 @@ namespace JSC {
         ExecutableAllocator::cacheFlush(start, size);
     }
 
-    static void MIPSAssembler::repatchInt32(void* from, int32_t to)
+    void MIPSAssembler::repatchInt32(void* from, int32_t to)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(from);
         ASSERT((*insn & 0xffe00000) == 0x3c000000); // lui
@@ -264,12 +264,12 @@ namespace JSC {
         ExecutableAllocator::cacheFlush(insn, 2 * sizeof(MIPSWord));
     }
 
-    static void MIPSAssembler::repatchPointer(void* from, void* to)
+    void MIPSAssembler::repatchPointer(void* from, void* to)
     {
         repatchInt32(from, reinterpret_cast<int32_t>(to));
     }
 
-    static void MIPSAssembler::repatchLoadPtrToLEA(void* from)
+    void MIPSAssembler::repatchLoadPtrToLEA(void* from)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(from);
         insn = insn + 3;
@@ -280,7 +280,7 @@ namespace JSC {
         ExecutableAllocator::cacheFlush(insn, sizeof(MIPSWord));
     }
 
-    static void MIPSAssembler::repatchLEAToLoadPtr(void* from)
+    void MIPSAssembler::repatchLEAToLoadPtr(void* from)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(from);
         insn = insn + 3;
@@ -294,30 +294,30 @@ namespace JSC {
         ExecutableAllocator::cacheFlush(insn, sizeof(MIPSWord));
     }
 
-    static void * MIPSAssembler::getRel32Target(void* where)
+    void * MIPSAssembler::getRel32Target(void* where)
     {
         int32_t rel = getInt32(where);
         return (char *)where + rel;
     }
 
-    static void * MIPSAssembler::getPointer(void* where)
+    void * MIPSAssembler::getPointer(void* where)
     {
         //return getInt32(where);
         return reinterpret_cast<void **>(where)[-1];
     }
 
-    static void ** MIPSAssembler::getPointerRef(void* where)
+    void ** MIPSAssembler::getPointerRef(void* where)
     {
         return &reinterpret_cast<void **>(where)[-1];
     }
 
-    static void MIPSAssembler::setPointer(void* where, const void* value)
+    void MIPSAssembler::setPointer(void* where, const void* value)
     {
         //setInt32(where, reinterpret_cast<int32_t>(value));
         reinterpret_cast<const void**>(where)[-1] = value;
     }
 
-    static int32_t MIPSAssembler::getInt32(void* where)
+    int32_t MIPSAssembler::getInt32(void* where)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
         int32_t offset = -2;
@@ -351,7 +351,7 @@ namespace JSC {
         return offset;
     }
 
-    static void MIPSAssembler::setInt32(void* where, int32_t value)
+    void MIPSAssembler::setInt32(void* where, int32_t value)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
         MIPSWord* toPos = reinterpret_cast<MIPSWord*>(value);
@@ -411,7 +411,7 @@ namespace JSC {
         }
     }
 
-    static int MIPSAssembler::linkWithOffset(MIPSWord* insn, void* to)
+    int MIPSAssembler::linkWithOffset(MIPSWord* insn, void* to)
     {
         ASSERT((*insn & 0xfc000000) == 0x10000000 // beq
                || (*insn & 0xfc000000) == 0x14000000 // bne
@@ -487,7 +487,7 @@ namespace JSC {
         return sizeof(MIPSWord);
     }
 
-    static int MIPSAssembler::linkCallInternal(void* from, void* to)
+    int MIPSAssembler::linkCallInternal(void* from, void* to)
     {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(from);
         insn = insn - 4;
