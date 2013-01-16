@@ -41,7 +41,9 @@ struct Register {
         return r;
     }
     Code code() const {
+#if !defined(JS_CPU_MIPS)
         JS_ASSERT((uint32)code_ < Registers::Total);
+#endif
         return code_;
     }
     const char *name() const {

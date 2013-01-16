@@ -12,7 +12,7 @@
 #include "ion/IonAllocPolicy.h"
 #include "ion/Registers.h"
 #include "ion/RegisterSets.h"
-#if defined(JS_CPU_X64) || defined(JS_CPU_ARM)
+#if defined(JS_CPU_X64) || defined(JS_CPU_ARM)  || defined(JS_CPU_ARM)
 // JS_SMALL_BRANCH means the range on a branch instruction
 // is smaller than the whole address space
 #    define JS_SMALL_BRANCH

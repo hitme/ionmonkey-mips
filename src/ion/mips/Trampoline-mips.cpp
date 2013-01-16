@@ -107,6 +107,7 @@ IonRuntime::generateEnterJIT(JSContext *cx)
         masm.subl(Imm32(8), a0);
 
         // Push what eax points to on stack, a Value is 2 words
+// Asse.. buf grow invalidates labels(256*4): JSC::AssemblerBuffer::grow(int) at ../../assembler/assembler/AssemblerBuffer.h:240
         masm.push(Operand(a0, 4));
         masm.push(Operand(a0, 0));
 
@@ -421,7 +422,7 @@ IonRuntime::generateVMWrapper(JSContext *cx, const VMFunction &f)
     AssertCanGC();
     typedef MoveResolver::MoveOperand MoveOperand;
 
-    JS_ASSERT(!StackKeptAligned);
+    //JS_ASSERT(!StackKeptAligned);
     JS_ASSERT(functionWrappers_);
     JS_ASSERT(functionWrappers_->initialized());
     VMWrapperMap::AddPtr p = functionWrappers_->lookupForAdd(&f);

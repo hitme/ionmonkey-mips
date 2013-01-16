@@ -563,6 +563,7 @@ MacroAssembler::generateBailoutTail(Register scratch)
     bind(&recompile);
     {
         setupUnalignedABICall(0, scratch);
+// Asse.. buf grow invalidates labels: JSC::AssemblerBuffer::grow(int) at ../../assembler/assembler/AssemblerBuffer.h:240
         callWithABI(JS_FUNC_TO_DATA_PTR(void *, RecompileForInlining));
 
         branchTest32(Zero, ReturnReg, ReturnReg, &exception);

@@ -653,6 +653,7 @@ CodeGenerator::visitCallNative(LCallNative *call)
     // Handle exception case.
     {
         masm.bind(&exception);
+// Asse.. buf grow invalidates labels(256*16): JSC::AssemblerBuffer::grow(int) at ../../assembler/assembler/AssemblerBuffer.h:240
         masm.handleException();
     }
     masm.bind(&success);

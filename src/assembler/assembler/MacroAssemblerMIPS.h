@@ -1512,8 +1512,10 @@ public:
 
     void push(TrustedImm32 imm)
     {
+        m_fixedWidth = true;
         move(imm, immTempRegister);
         push(immTempRegister);
+        m_fixedWidth = false;
     }
 
     // Register move operations:
@@ -1524,11 +1526,12 @@ public:
     {
         if (!imm.m_isPointer && !imm.m_value && !m_fixedWidth)
             move(MIPSRegisters::zero, dest);
-        else if (imm.m_isPointer || m_fixedWidth) {
+        //else if (imm.m_isPointer || m_fixedWidth) {
+        else {
             m_assembler.lui(dest, imm.m_value >> 16);
             m_assembler.ori(dest, dest, imm.m_value);
-        } else
-            m_assembler.li(dest, imm.m_value);
+        } //else
+          //  m_assembler.li(dest, imm.m_value);
     }
 
     void move(RegisterID src, RegisterID dest)

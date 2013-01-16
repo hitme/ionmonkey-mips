@@ -56,7 +56,11 @@
 namespace JSC {
 
     class AssemblerBuffer {
+#if defined(JS_CPU_MIPS)
+        static const int inlineCapacity = 256*64;
+#else
         static const int inlineCapacity = 256;
+#endif
     public:
         AssemblerBuffer()
             : m_buffer(m_inlineBuffer)
