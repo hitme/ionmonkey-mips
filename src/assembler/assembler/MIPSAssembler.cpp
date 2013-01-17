@@ -305,18 +305,44 @@ namespace JSC {
     void * MIPSAssembler::getPointer(void* where)
     {
         //return getInt32(where);
-        return reinterpret_cast<void **>(where)[-1];
+        //return reinterpret_cast<void **>(where)[-1];
+        MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
+        int32_t offset = -2;
+
+        insn -= 2;
+		ASSERT(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000));
+        offset = (*insn & 0x0000ffff) << 16; // lui
+        offset |= (*(insn + 1) & 0x0000ffff); // ori
+        return reinterpret_cast<void *>(offset);
     }
 
     void ** MIPSAssembler::getPointerRef(void* where)
     {
-        return &reinterpret_cast<void **>(where)[-1];
+        //return &reinterpret_cast<void **>(where)[-1];
+        MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
+        int32_t offset = -2;
+
+        insn -= 2;
+		ASSERT(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000));
+        offset = (*insn & 0x0000ffff) << 16; // lui
+        offset |= (*(insn + 1) & 0x0000ffff); // ori
+        return reinterpret_cast<void **>(offset);
     }
 
     void MIPSAssembler::setPointer(void* where, const void* value)
     {
         //setInt32(where, reinterpret_cast<int32_t>(value));
-        reinterpret_cast<const void**>(where)[-1] = value;
+        //reinterpret_cast<const void**>(where)[-1] = value;
+        MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
+        int32_t offset = -2;
+        insn -= 2;
+
+		ASSERT(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000));
+        offset = reinterpret_cast<int32_t>(value);
+        *insn &= 0xffff0000;
+        *(insn + 1) &= 0xffff0000;
+        *insn |= offset >> 16;
+        *(insn + 1) |= offset & 0x0000ffff;
     }
 
     int32_t MIPSAssembler::getInt32(void* where)
@@ -402,7 +428,8 @@ namespace JSC {
                 int oldTargetAddress = (topFourBits << 28) | (offset << 2);
                 int newTargetAddress = oldTargetAddress - (int)oldBase + (int)newBase;
                 int newInsnAddress = (int)insn;
-                if (((newInsnAddress + 4) >> 28) == (newTargetAddress >> 28))
+//                if (((newInsnAddress + 4) >> 28) == (newTargetAddress >> 28))
+                if (0 && (((newInsnAddress + 4) >> 28) == (newTargetAddress >> 28)))
                     *insn = 0x08000000 | ((newTargetAddress >> 2) & 0x3ffffff);
                 else {
                     /* lui */
@@ -480,8 +507,8 @@ namespace JSC {
             }
 
             insn = insn + 2;
-            if ((reinterpret_cast<intptr_t>(insn) + 4) >> 28
-                == reinterpret_cast<intptr_t>(to) >> 28) {
+            if (0 && ((reinterpret_cast<intptr_t>(insn) + 4) >> 28
+                == reinterpret_cast<intptr_t>(to) >> 28)) {
                 *insn = 0x08000000 | ((reinterpret_cast<intptr_t>(to) >> 2) & 0x3ffffff);
                 *(insn + 1) = 0;
                 return 4 * sizeof(MIPSWord);
