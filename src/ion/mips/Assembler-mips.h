@@ -111,25 +111,37 @@ static const FloatRegister f29 = {JSC::MIPSRegisters::f29};
 static const FloatRegister f30 = {JSC::MIPSRegisters::f30};
 static const FloatRegister f31 = {JSC::MIPSRegisters::f31};
 
-static const Register ArgumentsRectifierReg = a2;
-static const Register CallTempReg0 = t0;
-static const Register CallTempReg1 = t1;
-static const Register CallTempReg2 = t2;
-static const Register CallTempReg3 = t3;
-static const Register CallTempReg4 = v0;
-static const Register CallTempReg5 = v1;
+/*
+JS_ASSERT(CallTempReg0 != CallTempReg1);
+JS_ASSERT(CallTempReg0 != ArgumentsRectifierReg);
+JS_ASSERT(CallTempReg1 != ArgumentsRectifierReg);
+JS_ASSERT(CallTempReg0 != ArgumentsRectifierReg);
+JS_ASSERT(CallTempReg1 != ArgumentsRectifierReg);
+JS_ASSERT(CallTempReg2 != JSReturnReg_Type);
+JS_ASSERT(CallTempReg2 != JSReturnReg_Data);
+*/
+//JS_ASSERT(ArgumentsRectifierReg == s0);
+static const Register ArgumentsRectifierReg = s0;
+static const Register CallTempReg0 = s1;
+static const Register CallTempReg1 = s2;
+static const Register CallTempReg2 = s3;
+static const Register CallTempReg3 = s4;
+static const Register CallTempReg4 = s5;
+static const Register CallTempReg5 = s0;
 
-static const Register OsrFrameReg = a1;
-static const Register PreBarrierReg = a1;
+static const Register OsrFrameReg = t7;
+//JS_ASSERT(PreBarrierReg == t7);
+static const Register PreBarrierReg = t7;
 
 static const Register InvalidReg = { JSC::MIPSRegisters::invalid_reg };
 static const FloatRegister InvalidFloatReg = { JSC::MIPSRegisters::invalid_freg };
 
-static const Register JSReturnReg_Type = a0;
-static const Register JSReturnReg_Data = a1;
-static const Register ReturnReg = v0;
 static const Register StackPointer = sp;
-static const Register FramePointer = InvalidReg;
+//static const Register FramePointer = InvalidReg;
+static const Register FramePointer = fp;
+static const Register JSReturnReg_Type = t7;
+static const Register JSReturnReg_Data = t8;
+static const Register ReturnReg = t6;
 static const FloatRegister ReturnFloatReg = { JSC::MIPSRegisters::f1 };
 static const FloatRegister ScratchFloatReg = { JSC::MIPSRegisters::f0 };
 
@@ -151,7 +163,7 @@ static const FloatRegister fpTemp2Register = f31;
 // Also, the ARM abi wants the stack to be 8 byte aligned at
 // function boundaries.  I'm trying to make sure this is always true.
 static const uint32 StackAlignment = 8;
-static const bool StackKeptAligned = true;
+static const bool StackKeptAligned = false;
 
 static const Scale ScalePointer = TimesFour;
 struct ImmTag : public Imm32
@@ -993,19 +1005,7 @@ class Assembler
     }
 
     // Comparison of EAX against the address given by a Label.
-    JmpSrc cmpSrc(Label *label) {
-//        JmpSrc j = masm.cmp_eax();
-        JmpSrc j = mcss.jump().m_jmp;
-        if (label->bound()) {
-            // The jump can be immediately patched to the correct destination.
-            masm.linkJump(j, JmpDst(label->offset()));
-        } else {
-            // Thread the jump list through the unpatched jump targets.
-            JmpSrc prev = JmpSrc(label->use(j.offset()));
-            masm.setNextJump(j, prev);
-        }
-        return j;
-    }
+    JmpSrc cmpSrc(Label *label);
     JmpSrc jSrc(Condition cond, RepatchLabel *label) {
 //okm        JmpSrc j = masm.jCC(static_cast<JSC::X86Assembler::Condition>(cond));
         JmpSrc j = mcss.branch32(static_cast<JSC::MacroAssemblerMIPS::Condition>(cond), cmpTempRegister.code(), cmpTemp2Register.code()).m_jmp;
@@ -1120,11 +1120,7 @@ class Assembler
 //ok        masm.ret();
         mcss.ret();
     }
-    void retn(Imm32 n) {
-        // Remove the size of the return address which is included in the frame.
-//okm        masm.ret(n.value - sizeof(void *));
-        mcss.ret((n.value - sizeof(void *)));
-    }
+    void retn(Imm32 n);
     void call(Label *label) {
         if (label->bound()) {
 //ok            masm.linkJump(mcss.call(), JmpDst(label->offset()));
@@ -1267,22 +1263,22 @@ class Assembler
             JS_NOT_REACHED("unexpected operand kind");
         }
     }
-    void setCC(Condition cond, const Register &r) {
-//        masm.setCC_r(static_cast<JSC::X86Assembler::Condition>(cond), r.code());
-    }
+    void setCC(Condition cond, const Register &r);
     void testb(const Register &lhs, const Register &rhs) {
         JS_ASSERT(GeneralRegisterSet(Registers::SingleByteRegs).has(lhs));
         JS_ASSERT(GeneralRegisterSet(Registers::SingleByteRegs).has(rhs));
 //okm        masm.testb_rr(rhs.code(), lhs.code());
 //okm this instruction test if lhs is zero or not
-        mcss.move(rhs.code(), cmpTempRegister.code());
+        mcss.move(lhs.code(), cmpTempRegister.code());
+        mcss.move(rhs.code(), cmpTemp2Register.code());
         mcss.move(mRegisterID(0), cmpTempRegister.code());
     }
 
     void testl(const Register &lhs, const Register &rhs) {
 //okm        masm.testl_rr(rhs.code(), lhs.code());
 //okm this instruction test if lhs is zero or not
-        mcss.move(rhs.code(), cmpTempRegister.code());
+        mcss.move(lhs.code(), cmpTempRegister.code());
+        mcss.move(rhs.code(), cmpTemp2Register.code());
         mcss.move(mRegisterID(0), cmpTempRegister.code());
     }
     void testl(const Register &lhs, Imm32 rhs) {
@@ -1290,7 +1286,7 @@ class Assembler
         mcss.move(lhs.code(), cmpTempRegister.code());
         mcss.move(mTrustedImm32(rhs.value), cmpTemp2Register.code());
         mcss.and32(cmpTemp2Register.code(), cmpTempRegister.code());
-        mcss.move(mRegisterID(0), cmpTempRegister.code());
+        mcss.move(mRegisterID(0), cmpTemp2Register.code());
     }
     void testl(const Operand &lhs, Imm32 rhs) {
         switch (lhs.kind()) {
@@ -1299,14 +1295,14 @@ class Assembler
             mcss.move(lhs.reg(), cmpTempRegister.code());
             mcss.move(mTrustedImm32(rhs.value), cmpTemp2Register.code());
             mcss.and32(cmpTemp2Register.code(), cmpTempRegister.code());
-            mcss.move(mRegisterID(0), cmpTempRegister.code());
+            mcss.move(mRegisterID(0), cmpTemp2Register.code());
             break;
           case Operand::REG_DISP:
 //okm            masm.testl_i32m(rhs.value, lhs.disp(), lhs.base());
             mcss.load32(mAddress(lhs.base(), lhs.disp()), cmpTempRegister.code());
             mcss.move(mTrustedImm32(rhs.value), cmpTemp2Register.code());
             mcss.and32(cmpTemp2Register.code(), cmpTempRegister.code());
-            mcss.move(mRegisterID(0), cmpTempRegister.code());
+            mcss.move(mRegisterID(0), cmpTemp2Register.code());
             break;
           default:
             JS_NOT_REACHED("unexpected operand kind");
@@ -1564,15 +1560,9 @@ class Assembler
 //ok        masm.sarl_i8r(imm.value, dest.code());
         mcss.rshift32(mTrustedImm32(imm.value), dest.code());
     }
-    void shrl_cl(const Register &dest) {
-//        masm.shrl_CLr(dest.code());
-    }
-    void shll_cl(const Register &dest) {
-//        masm.shll_CLr(dest.code());
-    }
-    void sarl_cl(const Register &dest) {
-//        masm.sarl_CLr(dest.code());
-    }
+    void shrl_cl(const Register &dest);
+    void shll_cl(const Register &dest);
+    void sarl_cl(const Register &dest);
 
     void push(const Imm32 imm) {
 //ok??        masm.push_i32(imm.value);
@@ -1627,44 +1617,17 @@ class Assembler
 #endif
 
     // Zero-extend byte to 32-bit integer.
-    void movzxbl(const Register &src, const Register &dest) {
-//        masm.movzbl_rr(src.code(), dest.code());
-    }
+    void movzxbl(const Register &src, const Register &dest);
 
-    void cdq() {
-//        masm.cdq();
-    }
-    void idiv(Register dest) {
-//        masm.idivl_r(dest.code());
-    }
+    void cdq();
+    void idiv(Register dest);
 
-    void unpcklps(const FloatRegister &src, const FloatRegister &dest) {
-//        masm.unpcklps_rr(src.code(), dest.code());
-    }
-    void pinsrd(const Register &src, const FloatRegister &dest) {
-//        masm.pinsrd_rr(src.code(), dest.code());
-    }
-    void pinsrd(const Operand &src, const FloatRegister &dest) {
-        switch (src.kind()) {
-          case Operand::REG:
-//            masm.pinsrd_rr(src.reg(), dest.code());
-            break;
-          case Operand::REG_DISP:
-//            masm.pinsrd_mr(src.disp(), src.base(), dest.code());
-            break;
-          default:
-            JS_NOT_REACHED("unexpected operand kind");
-        }
-    }
-    void psrldq(Imm32 shift, const FloatRegister &dest) {
-//        masm.psrldq_rr(dest.code(), shift.value);
-    }
-    void psllq(Imm32 shift, const FloatRegister &dest) {
-//        masm.psllq_rr(dest.code(), shift.value);
-    }
-    void psrlq(Imm32 shift, const FloatRegister &dest) {
-//        masm.psrlq_rr(dest.code(), shift.value);
-    }
+    void unpcklps(const FloatRegister &src, const FloatRegister &dest);
+    void pinsrd(const Register &src, const FloatRegister &dest);
+    void pinsrd(const Operand &src, const FloatRegister &dest);
+    void psrldq(Imm32 shift, const FloatRegister &dest);
+    void psllq(Imm32 shift, const FloatRegister &dest);
+    void psrlq(Imm32 shift, const FloatRegister &dest);
 
     void cvtsi2sd(const Operand &src, const FloatRegister &dest) {
         switch (src.kind()) {
@@ -1692,21 +1655,14 @@ class Assembler
 //ok        masm.cvtsi2sd_rr(src.code(), dest.code());
         mcss.convertInt32ToDouble(src.code(), dest.code());
     }
-    void movmskpd(const FloatRegister &src, const Register &dest) {
-//        masm.movmskpd_rr(src.code(), dest.code());
-    }
-    void ptest(const FloatRegister &lhs, const FloatRegister &rhs) {
-//        JS_ASSERT(HasSSE41());
-//        masm.ptest_rr(rhs.code(), lhs.code());
-    }
+    void movmskpd(const FloatRegister &src, const Register &dest);
+    void ptest(const FloatRegister &lhs, const FloatRegister &rhs);
     void ucomisd(const FloatRegister &lhs, const FloatRegister &rhs) {
 //okm        masm.ucomisd_rr(rhs.code(), lhs.code());
         mcss.moveDouble(lhs.code(), fpTempRegister.code());
         mcss.moveDouble(rhs.code(), fpTemp2Register.code());
     }
-    void pcmpeqw(const FloatRegister &lhs, const FloatRegister &rhs) {
-//        masm.pcmpeqw_rr(rhs.code(), lhs.code());
-    }    
+    void pcmpeqw(const FloatRegister &lhs, const FloatRegister &rhs);
     void movd(const Register &src, const FloatRegister &dest) {
 //ok        masm.movd_rr(src.code(), dest.code());
         mcss.convertInt32ToDouble(src.code(),dest.code());
@@ -1794,17 +1750,11 @@ class Assembler
         }
     }
 //ok xorpd mainly used to clear fpScratchRegister, on mips, use zeroDouble instead
-    void xorpd(const FloatRegister &src, const FloatRegister &dest) {
-//        masm.xorpd_rr(src.code(), dest.code());
-    }
+    void xorpd(const FloatRegister &src, const FloatRegister &dest);
 //ok orpd only one use case
-    void orpd(const FloatRegister &src, const FloatRegister &dest) {
-//        masm.orpd_rr(src.code(), dest.code());
-    }
+    void orpd(const FloatRegister &src, const FloatRegister &dest);
 //ok andpd only one use case
-    void andpd(const FloatRegister &src, const FloatRegister &dest) {
-//        masm.andpd_rr(src.code(), dest.code());
-    }
+    void andpd(const FloatRegister &src, const FloatRegister &dest);
     void sqrtsd(const FloatRegister &src, const FloatRegister &dest) {
 //ok        masm.sqrtsd_rr(src.code(), dest.code());
         mcss.sqrtDouble(src.code(), dest.code());
@@ -1816,15 +1766,7 @@ class Assembler
 //ok        masm.roundsd_rr(src.code(), dest.code(), mode);
         mcss.floorDouble(src.code(), dest.code());
     }
-    void fstp(const Operand &src) {//callWithABI
-         switch (src.kind()) {
-           case Operand::REG_DISP:
-//             masm.fstp_m(src.disp(), src.base());
-             break;
-           default:
-             JS_NOT_REACHED("unexpected operand kind");
-         }
-    }
+    void fstp(const Operand &src);//callWithABI
 
     // Defined for compatibility with ARM's assembler
     uint32 actualOffset(uint32 x) {
@@ -1868,10 +1810,7 @@ class Assembler
         *start |= offset >> 2;
     }
 
-    static void patchWrite_Imm32(CodeLocationLabel dataLabel, Imm32 toWrite) {
-//TBD
-        *((int32 *) dataLabel.raw() - 1) = toWrite.value;
-    }
+    static void patchWrite_Imm32(CodeLocationLabel dataLabel, Imm32 toWrite);
 
     static void patchDataWithValueCheck(CodeLocationLabel data, ImmWord newData,
                                         ImmWord expectedData) {
@@ -1892,18 +1831,8 @@ class Assembler
     }
 
     // Toggle a jmp or cmp emitted by toggledJump().
-    static void ToggleToJmp(CodeLocationLabel inst) {
-        uint8_t *ptr = (uint8_t *)inst.raw();
-        //CMP AX,imm16
-        JS_ASSERT(*ptr == 0x3D);
-        //JMP rel32
-        *ptr = 0xE9;
-    }
-    static void ToggleToCmp(CodeLocationLabel inst) {
-        uint8_t *ptr = (uint8_t *)inst.raw();
-        JS_ASSERT(*ptr == 0xE9);
-        *ptr = 0x3D;
-    }
+    static void ToggleToJmp(CodeLocationLabel inst);
+    static void ToggleToCmp(CodeLocationLabel inst);
 };
 
 } // namespace ion

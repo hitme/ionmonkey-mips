@@ -88,8 +88,8 @@ LIRGeneratorMIPS::lowerModI(MMod *mod)
             return assignSnapshot(lir) && defineReuseInput(lir, mod, 0);
         }
     }
-    LModI *lir = new LModI(useFixed(mod->lhs(), a0), useRegister(mod->rhs()));
-    return assignSnapshot(lir) && defineFixed(lir, mod, LAllocation(AnyRegister(a1)));
+    LModI *lir = new LModI(useFixed(mod->lhs(), t6), useRegister(mod->rhs()));
+    return assignSnapshot(lir) && defineFixed(lir, mod, LAllocation(AnyRegister(t7)));
 }
 
 bool
@@ -107,7 +107,7 @@ LIRGeneratorMIPS::lowerUrshD(MUrsh *mir)
 #endif
 
     LUse lhsUse = useRegisterAtStart(lhs);
-    LAllocation rhsAlloc = rhs->isConstant() ? useOrConstant(rhs) : useFixed(rhs, v0);
+    LAllocation rhsAlloc = rhs->isConstant() ? useOrConstant(rhs) : useFixed(rhs, t8);
 
     LUrshD *lir = new LUrshD(lhsUse, rhsAlloc, tempCopy(lhs, 0));
     return define(lir, mir);
@@ -265,7 +265,7 @@ LIRGeneratorMIPS::lowerForShift(LInstructionHelper<1, 2, 0> *ins, MDefinition *m
     if (rhs->isConstant())
         ins->setOperand(1, useOrConstant(rhs));
     else
-        ins->setOperand(1, useFixed(rhs, v0));
+        ins->setOperand(1, useFixed(rhs, t8));
 
     return defineReuseInput(ins, mir, 0);
 }
@@ -330,8 +330,8 @@ LIRGeneratorMIPS::lowerUntypedPhiInput(MPhi *phi, uint32 inputPosition, LBlock *
 bool
 LIRGeneratorMIPS::lowerDivI(MDiv *div)
 {
-    LDivI *lir = new LDivI(useFixed(div->lhs(), a0), useRegister(div->rhs()), tempFixed(a1));
-    return assignSnapshot(lir) && defineFixed(lir, div, LAllocation(AnyRegister(a0)));
+    LDivI *lir = new LDivI(useFixed(div->lhs(), t6), useRegister(div->rhs()), tempFixed(t7));
+    return assignSnapshot(lir) && defineFixed(lir, div, LAllocation(AnyRegister(t6)));
 }
 
 
@@ -352,7 +352,7 @@ LIRGeneratorMIPS::visitStoreTypedArrayElement(MStoreTypedArrayElement *ins)
 
     // For byte arrays, the value has to be in a byte register on x86.
     if (ins->isByteArray())
-        value = useFixed(ins->value(), a0);
+        value = useFixed(ins->value(), t6);
     else
         value = useRegisterOrNonDoubleConstant(ins->value());
     return add(new LStoreTypedArrayElement(elements, index, value), ins);

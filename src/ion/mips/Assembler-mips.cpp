@@ -198,3 +198,183 @@ Assembler::TraceJumpRelocations(JSTracer *trc, IonCode *code, CompactBufferReade
     }
 }
 
+//x86 like
+
+void
+Assembler::patchWrite_Imm32(CodeLocationLabel dataLabel, Imm32 toWrite) {
+    ASSERT(0);
+//TBD
+    *((int32 *) dataLabel.raw() - 1) = toWrite.value;
+}
+
+void
+Assembler::fstp(const Operand &src) {//callWithABI
+    ASSERT(0);
+     switch (src.kind()) {
+       case Operand::REG_DISP:
+//             masm.fstp_m(src.disp(), src.base());
+         break;
+       default:
+         JS_NOT_REACHED("unexpected operand kind");
+     }
+}
+
+void
+Assembler::andpd(const FloatRegister &src, const FloatRegister &dest) {
+    ASSERT(0);
+	//      masm.andpd_rr(src.code(), dest.code());
+}
+
+void
+Assembler::orpd(const FloatRegister &src, const FloatRegister &dest) {
+    ASSERT(0);
+	//      masm.orpd_rr(src.code(), dest.code());
+}
+void
+Assembler::xorpd(const FloatRegister &src, const FloatRegister &dest) {
+    ASSERT(0);
+//        masm.xorpd_rr(src.code(), dest.code());
+}
+void
+Assembler::pcmpeqw(const FloatRegister &lhs, const FloatRegister &rhs) {
+    ASSERT(0);
+//        masm.pcmpeqw_rr(rhs.code(), lhs.code());
+}    
+void
+Assembler::ptest(const FloatRegister &lhs, const FloatRegister &rhs) {
+    ASSERT(0);
+//        JS_ASSERT(HasSSE41());
+//        masm.ptest_rr(rhs.code(), lhs.code());
+}
+void
+Assembler::movmskpd(const FloatRegister &src, const Register &dest) {
+    ASSERT(0);
+//        masm.movmskpd_rr(src.code(), dest.code());
+}
+
+void
+Assembler::cdq() {
+    ASSERT(0);
+//        masm.cdq();
+}
+void
+Assembler::idiv(Register dest) {
+    ASSERT(0);
+//        masm.idivl_r(dest.code());
+}
+
+void
+Assembler::unpcklps(const FloatRegister &src, const FloatRegister &dest) {
+    ASSERT(0);
+//        masm.unpcklps_rr(src.code(), dest.code());
+}
+void
+Assembler::pinsrd(const Register &src, const FloatRegister &dest) {
+    ASSERT(0);
+//        masm.pinsrd_rr(src.code(), dest.code());
+}
+void
+Assembler::pinsrd(const Operand &src, const FloatRegister &dest) {
+    ASSERT(0);
+    switch (src.kind()) {
+      case Operand::REG:
+//            masm.pinsrd_rr(src.reg(), dest.code());
+        break;
+      case Operand::REG_DISP:
+//            masm.pinsrd_mr(src.disp(), src.base(), dest.code());
+        break;
+      default:
+        JS_NOT_REACHED("unexpected operand kind");
+    }
+}
+void
+Assembler::psrldq(Imm32 shift, const FloatRegister &dest) {
+    ASSERT(0);
+//        masm.psrldq_rr(dest.code(), shift.value);
+}
+void
+Assembler::psllq(Imm32 shift, const FloatRegister &dest) {
+    ASSERT(0);
+//        masm.psllq_rr(dest.code(), shift.value);
+}
+void
+Assembler::psrlq(Imm32 shift, const FloatRegister &dest) {
+    ASSERT(0);
+//        masm.psrlq_rr(dest.code(), shift.value);
+}
+
+void
+Assembler::shrl_cl(const Register &dest) {
+    //ASSERT(0);
+//ok        masm.shrl_CLr(dest.code());
+    mcss.urshift32(mRegisterID(v0.code()), dest.code());
+}
+void
+Assembler::shll_cl(const Register &dest) {
+    //ASSERT(0);
+//ok       masm.shll_CLr(dest.code());
+    mcss.lshift32(mRegisterID(v0.code()), dest.code());
+}
+void
+Assembler::sarl_cl(const Register &dest) {
+    //ASSERT(0);
+//ok        masm.sarl_CLr(dest.code());
+    mcss.rshift32(mRegisterID(v0.code()), dest.code());
+}
+
+/*x86 gen sequence with setCC followed by movzxbl
+ *cmpl       $0x0, %eax
+ *sete       %dl
+ *movzbl      %edx, %edx
+ */
+void
+Assembler::setCC(Condition cond, const Register &r) {
+//ok        masm.setCC_r(static_cast<JSC::X86Assembler::Condition>(cond), r.code());
+    //ASSERT(0);
+    //mcss.set8(static_cast<JSC::MIPSAssembler::Condition>(cond), v0.code(), mImm32(0), dest.code());
+    mcss.set32(static_cast<JSC::MacroAssemblerMIPS::Condition>(cond), v0.code(), mImm32(0), r.code());
+}
+// Zero-extend byte to 32-bit integer.
+void
+Assembler::movzxbl(const Register &src, const Register &dest) {
+//ok        masm.movzbl_rr(src.code(), dest.code());
+    //ASSERT(0);
+}
+// Comparison of EAX against the address given by a Label.
+Assembler::JmpSrc
+Assembler::cmpSrc(Label *label) {
+    ASSERT(0);
+//ok:no usage        JmpSrc j = masm.cmp_eax();
+    JmpSrc j = mcss.jump().m_jmp;
+    if (label->bound()) {
+        // The jump can be immediately patched to the correct destination.
+        masm.linkJump(j, JmpDst(label->offset()));
+    } else {
+        // Thread the jump list through the unpatched jump targets.
+        JmpSrc prev = JmpSrc(label->use(j.offset()));
+        masm.setNextJump(j, prev);
+    }
+    return j;
+}
+// Toggle a jmp or cmp emitted by toggledJump().
+void
+Assembler::ToggleToJmp(CodeLocationLabel inst) {
+    uint8_t *ptr = (uint8_t *)inst.raw();
+    //CMP AX,imm16
+    JS_ASSERT(*ptr == 0x3D);
+    //JMP rel32
+    *ptr = 0xE9;
+}
+void
+Assembler::ToggleToCmp(CodeLocationLabel inst) {
+    uint8_t *ptr = (uint8_t *)inst.raw();
+    JS_ASSERT(*ptr == 0xE9);
+    *ptr = 0x3D;
+}
+void
+Assembler::retn(Imm32 n) {
+    // Remove the size of the return address which is included in the frame.
+//okm   masm.ret(n.value - sizeof(void *));
+    //mcss.ret((n.value - sizeof(void *)));
+    mcss.ret((n.value));
+}

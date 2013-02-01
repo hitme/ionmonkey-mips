@@ -79,7 +79,7 @@ MoveEmitterMIPS::tempReg()
 
     // For now, just pick edx/rdx as the eviction point. This is totally
     // random, and if it ends up being bad, we can use actual heuristics later.
-    spilledReg_ = a1;
+    spilledReg_ = t6;
 
 #ifdef JS_CPU_X64
     JS_ASSERT(edx == rdx);

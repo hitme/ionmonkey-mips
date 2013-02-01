@@ -2069,7 +2069,8 @@ public:
 
     void ret(int imm)
     {
-        move(TrustedImm32(imm), MIPSRegisters::ra);
+        //move(TrustedImm32(imm), MIPSRegisters::ra);
+        add32(TrustedImm32(imm), MIPSRegisters::sp);
         m_assembler.jr(MIPSRegisters::ra);
         m_assembler.nop();
     }

@@ -86,6 +86,7 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
                                            StackAlignment);
     }
 
+    //reserveStack(stackAdjust+16);
     reserveStack(stackAdjust);
 
     // Position all arguments.
@@ -99,12 +100,18 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
         emitter.finish();
     }
 
+    //mips arguments
+    movl(Operand(sp, 0x04), a0);
+    movl(Operand(sp, 0x08), a1);
+    movl(Operand(sp, 0x0c), a2);
+    movl(Operand(sp, 0x10), a3);
+    reserveStack(16);
 #ifdef DEBUG
     {
         // Check call alignment.
         Label good;
-        movl(sp, a0);
-        testl(a0, Imm32(StackAlignment - 1));
+        movl(sp, t0);
+        testl(t0, Imm32(StackAlignment - 1));
         j(Equal, &good);
         breakpoint();
         bind(&good);
@@ -113,7 +120,9 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
 
     call(ImmWord(fun));
 
+    //freeStack(stackAdjust+16);
     freeStack(stackAdjust);
+    freeStack(16);
     if (result == DOUBLE) {
         reserveStack(sizeof(double));
         fstp(Operand(sp, 0));

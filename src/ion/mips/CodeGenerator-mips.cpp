@@ -676,8 +676,8 @@ CodeGeneratorMIPS::visitDivI(LDivI *ins)
 
     MDiv *mir = ins->mir();
 
-    JS_ASSERT(remainder == a1);
-    JS_ASSERT(lhs == a0);
+    JS_ASSERT(remainder == t7);
+    JS_ASSERT(lhs == t6);
 
     // Prevent divide by zero.
     if (mir->canBeDivideByZero()) {
@@ -759,8 +759,8 @@ CodeGeneratorMIPS::visitModI(LModI *ins)
     Register rhs = ToRegister(ins->rhs());
 
     // Required to use idiv.
-    JS_ASSERT(remainder == a1);
-    JS_ASSERT(lhs == a0);
+    JS_ASSERT(remainder == t7);
+    JS_ASSERT(lhs == t6);
 
     // If rhs == 0, bailout, since result must be a double (NaN).
     masm.testl(rhs, rhs);
@@ -771,7 +771,7 @@ CodeGeneratorMIPS::visitModI(LModI *ins)
 
     // Since the lhs will be made positive before reaching an idiv, instead of
     // sign extending eax into edx to 64-bit (edx:eax), we can simply zero it.
-    masm.xorl(a1, a1);
+    masm.xorl(t7, t7);
 
     // Switch based on sign of the lhs.
     masm.branchTest32(Assembler::Signed, lhs, lhs, &negative);
@@ -876,7 +876,7 @@ CodeGeneratorMIPS::visitShiftI(LShiftI *ins)
             JS_NOT_REACHED("Unexpected shift op");
         }
     } else {
-        JS_ASSERT(ToRegister(rhs) == v0);
+        JS_ASSERT(ToRegister(rhs) == t8);
         switch (ins->bitop()) {
           case JSOP_LSH:
             masm.shll_cl(lhs);
@@ -915,7 +915,7 @@ CodeGeneratorMIPS::visitUrshD(LUrshD *ins)
         if (shift)
             masm.shrl(Imm32(shift), lhs);
     } else {
-        JS_ASSERT(ToRegister(rhs) == v0);
+        JS_ASSERT(ToRegister(rhs) == t8);
         masm.shrl_cl(lhs);
     }
 

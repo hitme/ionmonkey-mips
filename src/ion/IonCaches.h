@@ -104,7 +104,7 @@ class IonCache
 #ifdef JS_CPU_ARM
     static const size_t REJOIN_LABEL_OFFSET = 4;
 #elif  defined(JS_CPU_MIPS)
-    static const size_t REJOIN_LABEL_OFFSET = 4;
+    static const size_t REJOIN_LABEL_OFFSET = 0;
 #else
     static const size_t REJOIN_LABEL_OFFSET = 0;
 #endif

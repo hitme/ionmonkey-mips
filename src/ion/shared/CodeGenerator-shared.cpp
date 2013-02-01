@@ -396,7 +396,11 @@ CodeGeneratorShared::callVM(const VMFunction &fun, LInstruction *ins, const Regi
 
     // Remove rest of the frame left on the stack. We remove the return address
     // which is implicitly poped when returning.
+#if defined(JS_CPU_MIPS) && 0
+    int framePop = sizeof(IonExitFrameLayout);
+#else
     int framePop = sizeof(IonExitFrameLayout) - sizeof(void*);
+#endif
 
     // Pop arguments from framePushed.
     masm.implicitPop(fun.explicitStackSlots() * sizeof(void *) + framePop);

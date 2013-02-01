@@ -63,17 +63,10 @@ public:
     static const uint32 Allocatable = 23; 
 
     static const uint32 AllMask = (1 << Total) - 1;
-    static const uint32 ArgRegMask = 0x1f;
+    //static const uint32 ArgRegMask = 0x1f;
+    static const uint32 ArgRegMask = 0;
 
     static const uint32 VolatileMask =
-        (1 << JSC::MIPSRegisters::v0) |
-        (1 << JSC::MIPSRegisters::v1) |
-        (1 << JSC::MIPSRegisters::a0) |
-        (1 << JSC::MIPSRegisters::a1);
-
-    static const uint32 NonVolatileMask =
-        (1 << JSC::MIPSRegisters::a2) |
-        (1 << JSC::MIPSRegisters::a3) |
         (1 << JSC::MIPSRegisters::t0) |
         (1 << JSC::MIPSRegisters::t1) |
         (1 << JSC::MIPSRegisters::t2) |
@@ -82,6 +75,11 @@ public:
         (1 << JSC::MIPSRegisters::t5) |
         (1 << JSC::MIPSRegisters::t6) |
         (1 << JSC::MIPSRegisters::t7) |
+        (1 << JSC::MIPSRegisters::t8);
+
+    static const uint32 NonVolatileMask =
+        (1 << JSC::MIPSRegisters::a2) |
+        (1 << JSC::MIPSRegisters::a3) |
         (1 << JSC::MIPSRegisters::s0) |
         (1 << JSC::MIPSRegisters::s1) |
         (1 << JSC::MIPSRegisters::s2) |
@@ -90,13 +88,18 @@ public:
         (1 << JSC::MIPSRegisters::s5) |
         (1 << JSC::MIPSRegisters::s6) |
         (1 << JSC::MIPSRegisters::s7) |
-        (1 << JSC::MIPSRegisters::t8);
+        (1 << JSC::MIPSRegisters::v0) |
+        (1 << JSC::MIPSRegisters::v1) |
+        (1 << JSC::MIPSRegisters::a0) |
+        (1 << JSC::MIPSRegisters::a1);
 
+    static const uint32 WrapperMask = VolatileMask;
+#if 0
     static const uint32 WrapperMask =
         VolatileMask |         // = arguments
         (1 << JSC::MIPSRegisters::a2) | // = outReg
         (1 << JSC::MIPSRegisters::a3);  // = argBase
-
+#endif
     static const uint32 SingleByteRegs =
         VolatileMask | NonVolatileMask;
 
