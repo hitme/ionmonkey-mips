@@ -22,7 +22,8 @@ MacroAssemblerMIPS::setupABICall(uint32 args)
 
     args_ = args;
     passedArgs_ = 0;
-    stackForCall_ = 0;
+    stackForCall_ = 16;
+//    subl(Imm32(16), sp);
 }
 
 void
@@ -46,14 +47,33 @@ MacroAssemblerMIPS::setupUnalignedABICall(uint32 args, const Register &scratch)
 void
 MacroAssemblerMIPS::passABIArg(const MoveOperand &from)
 {
+    MoveOperand to;
+
     ++passedArgs_;
-    MoveOperand to = MoveOperand(StackPointer, stackForCall_);
-    if (from.isDouble()) {
-        stackForCall_ += sizeof(double);
-        enoughMemory_ &= moveResolver_.addMove(from, to, Move::DOUBLE);
-    } else {
-        stackForCall_ += sizeof(int32_t);
-        enoughMemory_ &= moveResolver_.addMove(from, to, Move::GENERAL);
+
+    if(passedArgs_ <= 4){
+        Register destReg;
+        FloatRegister destFloatReg;
+    
+        if (from.isDouble() && GetArgFloatReg(passedArgs_, &destFloatReg)) {
+            to = MoveOperand(destFloatReg);
+            enoughMemory_ &= moveResolver_.addMove(from, to, Move::DOUBLE);
+        }else {
+            GetArgReg(passedArgs_, &destReg); 
+            to = MoveOperand(destReg);
+            enoughMemory_ &= moveResolver_.addMove(from, to, Move::GENERAL);
+        }
+    }else{
+#if 1
+        to = MoveOperand(StackPointer, stackForCall_);
+        if (from.isDouble()) {
+            stackForCall_ += sizeof(double);
+            enoughMemory_ &= moveResolver_.addMove(from, to, Move::DOUBLE);
+        } else {
+            stackForCall_ += sizeof(int32_t);
+            enoughMemory_ &= moveResolver_.addMove(from, to, Move::GENERAL);
+        }
+#endif
     }
 }
 
@@ -86,7 +106,6 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
                                            StackAlignment);
     }
 
-    //reserveStack(stackAdjust+16);
     reserveStack(stackAdjust);
 
     // Position all arguments.
@@ -100,12 +119,6 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
         emitter.finish();
     }
 
-    //mips arguments
-    movl(Operand(sp, 0x04), a0);
-    movl(Operand(sp, 0x08), a1);
-    movl(Operand(sp, 0x0c), a2);
-    movl(Operand(sp, 0x10), a3);
-    reserveStack(16);
 #ifdef DEBUG
     {
         // Check call alignment.
@@ -120,9 +133,7 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
 
     call(ImmWord(fun));
 
-    //freeStack(stackAdjust+16);
     freeStack(stackAdjust);
-    freeStack(16);
     if (result == DOUBLE) {
         reserveStack(sizeof(double));
         fstp(Operand(sp, 0));

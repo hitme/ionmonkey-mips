@@ -78,8 +78,6 @@ public:
         (1 << JSC::MIPSRegisters::t8);
 
     static const uint32 NonVolatileMask =
-        (1 << JSC::MIPSRegisters::a2) |
-        (1 << JSC::MIPSRegisters::a3) |
         (1 << JSC::MIPSRegisters::s0) |
         (1 << JSC::MIPSRegisters::s1) |
         (1 << JSC::MIPSRegisters::s2) |
@@ -87,11 +85,7 @@ public:
         (1 << JSC::MIPSRegisters::s4) |
         (1 << JSC::MIPSRegisters::s5) |
         (1 << JSC::MIPSRegisters::s6) |
-        (1 << JSC::MIPSRegisters::s7) |
-        (1 << JSC::MIPSRegisters::v0) |
-        (1 << JSC::MIPSRegisters::v1) |
-        (1 << JSC::MIPSRegisters::a0) |
-        (1 << JSC::MIPSRegisters::a1);
+        (1 << JSC::MIPSRegisters::s7);
 
     static const uint32 WrapperMask = VolatileMask;
 #if 0
@@ -106,6 +100,12 @@ public:
     static const uint32 NonAllocatableMask =
         (1 << JSC::MIPSRegisters::zero) |
         (1 << JSC::MIPSRegisters::at) |
+        (1 << JSC::MIPSRegisters::v0) |
+        (1 << JSC::MIPSRegisters::v1) |
+        (1 << JSC::MIPSRegisters::a0) |
+        (1 << JSC::MIPSRegisters::a1) |
+        (1 << JSC::MIPSRegisters::a2) |
+        (1 << JSC::MIPSRegisters::a3) |
         (1 << JSC::MIPSRegisters::t9) | // t9 = scratch
         (1 << JSC::MIPSRegisters::k0) |
         (1 << JSC::MIPSRegisters::k1) |

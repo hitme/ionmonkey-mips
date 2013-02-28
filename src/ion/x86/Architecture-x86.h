@@ -56,6 +56,7 @@ class Registers {
 
     static const uint32 ArgRegMask = 0;
 
+#if 1
     static const uint32 VolatileMask =
         (1 << JSC::X86Registers::eax) |
         (1 << JSC::X86Registers::ecx) |

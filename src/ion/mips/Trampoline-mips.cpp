@@ -442,6 +442,7 @@ IonRuntime::generateVMWrapper(JSContext *cx, const VMFunction &f)
     // Generate a separated code for the wrapper.
     MacroAssembler masm;
 
+    masm.push(ra);
     // Avoid conflicts with argument registers while discarding the result after
     // the function call.
     GeneralRegisterSet regs = GeneralRegisterSet(Register::Codes::WrapperMask);
@@ -499,6 +500,10 @@ IonRuntime::generateVMWrapper(JSContext *cx, const VMFunction &f)
     masm.loadJSContext(cxreg);
     masm.passABIArg(cxreg);
 
+#if 0
+    masm.breakpoint();
+#endif
+
     size_t argDisp = 0;
 
     // Copy arguments.
@@ -508,20 +513,35 @@ IonRuntime::generateVMWrapper(JSContext *cx, const VMFunction &f)
             switch (f.argProperties(explicitArg)) {
               case VMFunction::WordByValue:
                 masm.passABIArg(MoveOperand(argsBase, argDisp));
+#if 0
+    masm.breakpoint();
+#endif
                 argDisp += sizeof(void *);
                 break;
               case VMFunction::DoubleByValue:
                 masm.passABIArg(MoveOperand(argsBase, argDisp));
+#if 0
+    masm.breakpoint();
+#endif
                 argDisp += sizeof(void *);
                 masm.passABIArg(MoveOperand(argsBase, argDisp));
+#if 0
+    masm.breakpoint();
+#endif
                 argDisp += sizeof(void *);
                 break;
               case VMFunction::WordByRef:
                 masm.passABIArg(MoveOperand(argsBase, argDisp, MoveOperand::EFFECTIVE));
+#if 0
+    masm.breakpoint();
+#endif
                 argDisp += sizeof(void *);
                 break;
               case VMFunction::DoubleByRef:
                 masm.passABIArg(MoveOperand(argsBase, argDisp, MoveOperand::EFFECTIVE));
+#if 0
+    masm.breakpoint();
+#endif
                 argDisp += 2 * sizeof(void *);
                 break;
             }

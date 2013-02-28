@@ -1835,6 +1835,34 @@ class Assembler
     static void ToggleToCmp(CodeLocationLabel inst);
 };
 
+static const uint32 NumArgRegs = 4;
+static inline bool
+GetArgReg(uint32 arg, Register *out)
+{
+    if (arg <= 4) {
+        *out = Register::FromCode(arg + 3);
+        return true;
+    }
+    return false;
+}
+
+static inline bool
+GetArgFloatReg(uint32 arg, FloatRegister *out)
+{
+    if (arg <= 4) {
+        *out = FloatRegister::FromCode(arg + 11);
+        return true;
+    }
+    return false;
+}
+
+static inline uint32
+GetArgStackDisp(uint32 arg)
+{
+    JS_ASSERT(arg >= NumArgRegs);
+    return arg * STACK_SLOT_SIZE;
+}
+
 } // namespace ion
 } // namespace js
 
