@@ -394,7 +394,9 @@ namespace JSC {
         if(((*(insn + 2) & 0xffe00000) == 0x3c000000) && ((*(insn + 3) & 0xfc000000) == 0x34000000)) {
             // push imm32
             insn += 2;
+            *insn &= 0xffff0000;
             *insn = (*insn) | ((value >> 16) & 0xffff);
+            *(insn + 1) &= 0xffff0000;
             *(insn + 1) = (*(insn + 1)) | (value & 0xffff);
         }else if ((!(*(insn - 1)) && !(*(insn - 2)) && !(*(insn - 3)) && !(*(insn - 5))) ||
                 (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x03200008))){
