@@ -95,7 +95,8 @@ public:
         (1 << JSC::MIPSRegisters::a3);  // = argBase
 #endif
     static const uint32 SingleByteRegs =
-        VolatileMask | NonVolatileMask;
+        VolatileMask | NonVolatileMask |
+        (1 << JSC::MIPSRegisters::v0);
 
     static const uint32 NonAllocatableMask =
         (1 << JSC::MIPSRegisters::zero) |

@@ -1257,6 +1257,10 @@ CodeGenerator::generateArgumentsChecks()
     // Reserve the amount of stack the actual frame will use. We have to undo
     // this before falling through to the method proper though, because the
     // monomorphic call case will bypass this entire path.
+
+#if defined JS_CPU_MIPS
+    masm.push(ra);
+#endif
     masm.reserveStack(frameSize());
 
     // No registers are allocated yet, so it's safe to grab anything.

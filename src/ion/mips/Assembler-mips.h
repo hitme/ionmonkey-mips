@@ -141,9 +141,9 @@ static const Register StackPointer = sp;
 static const Register FramePointer = fp;
 static const Register JSReturnReg_Type = t7;
 static const Register JSReturnReg_Data = t8;
-static const Register ReturnReg = t6;
-static const FloatRegister ReturnFloatReg = { JSC::MIPSRegisters::f1 };
-static const FloatRegister ScratchFloatReg = { JSC::MIPSRegisters::f0 };
+static const Register ReturnReg = v0;
+static const FloatRegister ReturnFloatReg = { JSC::MIPSRegisters::f0 };
+static const FloatRegister ScratchFloatReg = { JSC::MIPSRegisters::f1 };
 
 static const Register ScratchRegister = t9;
 
@@ -1118,6 +1118,7 @@ class Assembler
 
     void ret() {
 //ok        masm.ret();
+        pop(ra);
         mcss.ret();
     }
     void retn(Imm32 n);

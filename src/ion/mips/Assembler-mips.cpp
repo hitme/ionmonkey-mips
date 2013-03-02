@@ -376,5 +376,6 @@ Assembler::retn(Imm32 n) {
     // Remove the size of the return address which is included in the frame.
 //okm   masm.ret(n.value - sizeof(void *));
     //mcss.ret((n.value - sizeof(void *)));
+    pop(ra);
     mcss.ret((n.value));
 }

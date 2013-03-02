@@ -141,7 +141,8 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
         freeStack(sizeof(double));
     }
     if (dynamicAlignment_)
-        pop(sp);
+        //pop(sp);
+        movl(Operand(sp, 0), sp);
 
     JS_ASSERT(inCall_);
     inCall_ = false;

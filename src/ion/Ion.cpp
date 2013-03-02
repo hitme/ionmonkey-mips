@@ -167,7 +167,7 @@ IonRuntime::initialize(JSContext *cx)
         FrameSizeClass class_ = FrameSizeClass::FromClass(id);
         if (class_ == FrameSizeClass::ClassLimit())
             break;
-#if ! defined(JS_CPU_MIPS)
+#if 0 && ! defined(JS_CPU_MIPS)
         break;
 #endif
         bailoutTables_.infallibleAppend(NULL);
@@ -176,7 +176,7 @@ IonRuntime::initialize(JSContext *cx)
             return false;
     }
 
-#if  defined(JS_CPU_MIPS)
+#if 1 || defined(JS_CPU_MIPS)
     bailoutHandler_ = generateBailoutHandler(cx);
     if (!bailoutHandler_)
         return false;
