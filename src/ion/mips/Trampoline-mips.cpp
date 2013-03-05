@@ -207,7 +207,7 @@ IonRuntime::generateInvalidator(JSContext *cx)
 {
     AutoIonContextAlloc aica(cx);
     MacroAssembler masm(cx);
-    masm.push(ra);
+    //masm.push(ra);
 
     // We do the minimum amount of work in assembly and shunt the rest
     // off to InvalidationBailout. Assembly does:
@@ -257,7 +257,7 @@ IonCode *
 IonRuntime::generateArgumentsRectifier(JSContext *cx)
 {
     MacroAssembler masm(cx);
-    masm.push(ra);
+    //masm.push(ra);
 
     // ArgumentsRectifierReg contains the |nargs| pushed onto the current frame.
     // Including |this|, there are (|nargs| + 1) arguments to copy.
@@ -409,7 +409,7 @@ IonRuntime::generateBailoutTable(JSContext *cx, uint32 frameClass)
     for (size_t i = 0; i < BAILOUT_TABLE_SIZE; i++)
         masm.call(&bailout);
     masm.bind(&bailout);
-    masm.push(ra);
+    //masm.push(ra);
 
     GenerateBailoutThunk(cx, masm, frameClass);
 
@@ -422,7 +422,7 @@ IonRuntime::generateBailoutHandler(JSContext *cx)
 {
     MacroAssembler masm;
 
-    masm.push(ra);
+    //masm.push(ra);
     GenerateBailoutThunk(cx, masm, NO_FRAME_SIZE_CLASS_ID);
 
     Linker linker(masm);
@@ -613,7 +613,7 @@ IonCode *
 IonRuntime::generatePreBarrier(JSContext *cx)
 {
     MacroAssembler masm;
-    masm.push(ra);
+//    masm.push(ra);
 
     RegisterSet save = RegisterSet(GeneralRegisterSet(Registers::VolatileMask),
                                    FloatRegisterSet(FloatRegisters::VolatileMask));
