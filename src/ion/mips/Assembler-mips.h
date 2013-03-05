@@ -1574,11 +1574,17 @@ class Assembler
         switch (src.kind()) {
           case Operand::REG:
 //ok            masm.push_r(src.reg());
-            mcss.push(src.reg());
+            if (src.reg() == sp.code()){
+                mcss.store32(mRegisterID(src.reg()), mAddress(src.base(), -4));
+                mcss.sub32(mTrustedImm32(4), mRegisterID(src.reg()));
+            }else 
+                mcss.push(mRegisterID(src.reg()));
             break;
           case Operand::REG_DISP:
 //ok            masm.push_m(src.disp(), src.base());
-            mcss.push(mAddress(src.base(), src.disp()));
+            mcss.sub32(mTrustedImm32(4), mRegisterID(sp.code()));
+            mcss.load32(mAddress(src.base(), src.disp()), dataTempRegister.code());
+            mcss.store32(dataTempRegister.code(), mAddress(sp.code(), 0));
             break;
           default:
             JS_NOT_REACHED("unexpected operand kind");
@@ -1586,18 +1592,27 @@ class Assembler
     }
     void push(const Register &src) {
 //ok        masm.push_r(src.code());
-        mcss.push(src.code());
+        if (src.code() == sp.code()){
+            mcss.store32(mRegisterID(src.code()), mAddress(src.code(), -4));
+            mcss.sub32(mTrustedImm32(4), mRegisterID(src.code()));
+        }else 
+            mcss.push(mRegisterID(src.code()));
     }
 
     void pop(const Operand &src) {
         switch (src.kind()) {
           case Operand::REG:
 //ok            masm.pop_r(src.reg());
-            mcss.push(src.reg());
+            if (src.reg() == sp.code()){
+                mcss.load32(mAddress(src.base(), 0), mRegisterID(src.reg()));
+            }else 
+                mcss.pop(mRegisterID(src.reg()));
             break;
           case Operand::REG_DISP:
 //ok            masm.pop_m(src.disp(), src.base());
-            mcss.push(mAddress(src.base(), src.disp()));
+            mcss.load32(mAddress(sp.code(), 0), dataTempRegister.code());
+            mcss.store32(dataTempRegister.code(), mAddress(src.base(), src.disp()));
+            mcss.add32(mTrustedImm32(4), mRegisterID(sp.code()));
             break;
           default:
             JS_NOT_REACHED("unexpected operand kind");
@@ -1605,7 +1620,10 @@ class Assembler
     }
     void pop(const Register &src) {
 //ok        masm.pop_r(src.code());
-        mcss.pop(src.code());
+        if (src.code() == sp.code()){
+            mcss.load32(mAddress(src.code(), 0), mRegisterID(src.code()));
+        }else 
+            mcss.pop(mRegisterID(src.code()));
     }
 
 #ifdef JS_CPU_X86

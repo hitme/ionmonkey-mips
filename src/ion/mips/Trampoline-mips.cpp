@@ -591,7 +591,11 @@ IonRuntime::generateVMWrapper(JSContext *cx, const VMFunction &f)
         break;
     }
     masm.leaveExitFrame();
+#if 0 && defined(JS_CPU_MIPS)
+    masm.retn(Imm32(f.explicitStackSlots() * sizeof(void *)));
+#else
     masm.retn(Imm32(sizeof(IonExitFrameLayout) + f.explicitStackSlots() * sizeof(void *)));
+#endif
 
     masm.bind(&exception);
     masm.handleException();
