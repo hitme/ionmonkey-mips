@@ -190,6 +190,7 @@ IonFrameIterator::prevFp() const
         currentSize = SizeOfFramePrefix(IonFrame_OptimizedJS);
     }
     currentSize += current()->prevFrameLocalSize();
+//cause failure
     return current_ + currentSize;
 }
 

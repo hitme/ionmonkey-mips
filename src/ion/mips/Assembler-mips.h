@@ -162,7 +162,7 @@ static const FloatRegister fpTemp2Register = f31;
 // when the address they are dealing with is 8 byte aligned.
 // Also, the ARM abi wants the stack to be 8 byte aligned at
 // function boundaries.  I'm trying to make sure this is always true.
-static const uint32 StackAlignment = 8;
+static const uint32 StackAlignment = 16;
 static const bool StackKeptAligned = false;
 
 static const Scale ScalePointer = TimesFour;
@@ -641,11 +641,7 @@ class Assembler
     void j(DoubleCondition cond, IonCode *target) {
         j(cond, target->raw(), Relocation::IONCODE);
     }
-    void call(IonCode *target) {
-//ok        JmpSrc src = masm.call();
-        JmpSrc src = mcss.call().m_jmp;
-        addPendingJump(src, target->raw(), Relocation::IONCODE);
-    }
+    void call(IonCode *target);
     void call(ImmWord target) {
 //ok        JmpSrc src = masm.call();
         JmpSrc src = mcss.call().m_jmp;

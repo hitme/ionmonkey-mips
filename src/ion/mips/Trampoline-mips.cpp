@@ -150,6 +150,7 @@ IonRuntime::generateEnterJIT(JSContext *cx)
         Call passed-in code, get return value and fill in the
         passed in return value pointer
     ***************************************************************/
+    //arm : masm.ma_callIonNoPush
     masm.call(Operand(fp, ARG_JITCODE));
 
     // Pop arguments off the stack.
@@ -329,6 +330,7 @@ IonRuntime::generateArgumentsRectifier(JSContext *cx)
     masm.movl(Operand(t6, offsetof(JSScript, ion)), t6);
     masm.movl(Operand(t6, IonScript::offsetOfMethod()), t6);
     masm.movl(Operand(t6, IonCode::offsetOfCode()), t6);
+    //arm : masm.ma_callIonHalfPush
     masm.call(t6);
 
     // Remove the rectifier frame.

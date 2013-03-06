@@ -4075,7 +4075,7 @@ mjit::Compiler::inliningCompileHelper()
 
     uint32_t *addr = script_->addressOfUseCount();
     masm.add32(Imm32(1), AbsoluteAddress(addr));
-#if defined(JS_CPU_X86) || defined(JS_CPU_ARM) || defined(JS_CPU_ARM)
+#if defined(JS_CPU_X86) || defined(JS_CPU_ARM) || defined(JS_CPU_MIPS)
     Jump jump = masm.branch32(Assembler::GreaterThanOrEqual, AbsoluteAddress(addr),
                               Imm32(USES_BEFORE_INLINING));
 #else

@@ -379,3 +379,10 @@ Assembler::retn(Imm32 n) {
     pop(ra);
     mcss.ret((n.value));
 }
+void 
+Assembler::call(IonCode *target) {
+//ok        JmpSrc src = masm.call();
+    //arm : ma_callIonHalfPush from MacroAsse..-arm.h
+    JmpSrc src = mcss.call().m_jmp;
+    addPendingJump(src, target->raw(), Relocation::IONCODE);
+}

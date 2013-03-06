@@ -727,20 +727,9 @@ class MacroAssemblerMIPS : public Assembler
         movl(StackPointer, Operand(&compartment->rt->ionTop));
     }
 
-    void callWithExitFrame(IonCode *target, Register dynStack) {
-        addPtr(Imm32(framePushed()), dynStack);
-        makeFrameDescriptor(dynStack, IonFrame_OptimizedJS);
-        Push(dynStack);
-        call(target);
-    }
+    void callWithExitFrame(IonCode *target, Register dynStack);
 
-    void enterOsr(Register calleeToken, Register code) {
-        push(Imm32(0)); // num actual args.
-        push(calleeToken);
-        push(Imm32(MakeFrameDescriptor(0, IonFrame_Osr)));
-        call(code);
-        addl(Imm32(sizeof(uintptr_t) * 2), sp);
-    }
+    void enterOsr(Register calleeToken, Register code);
 
   protected://x86
     // Bytes pushed onto the frame by the callee; includes frameDepth_. This is
@@ -1100,14 +1089,9 @@ class MacroAssemblerMIPS : public Assembler
         return true;
     }
 
-    void callWithExitFrame(IonCode *target) {
-        uint32 descriptor = MakeFrameDescriptor(framePushed(), IonFrame_OptimizedJS);
-        Push(Imm32(descriptor));
-        call(target);
-    }
-    void callIon(const Register &callee) {
-        call(callee);
-    }
+    void callWithExitFrame(IonCode *target);
+
+    void callIon(const Register &callee);
 
     void checkStackAlignment() {
         // Exists for ARM compatibility.
