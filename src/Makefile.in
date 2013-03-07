@@ -443,6 +443,7 @@ VPATH += 	$(srcdir)/assembler/assembler \
 
 CPPSRCS +=	ARMAssembler.cpp \
 		MIPSAssembler.cpp \
+		MacroAssemblerMIPS.cpp \
 		MacroAssemblerARM.cpp \
 		MacroAssemblerX86Common.cpp \
 		YarrJIT.cpp \

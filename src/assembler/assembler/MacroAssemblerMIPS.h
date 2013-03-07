@@ -2035,31 +2035,13 @@ public:
         return Call(m_assembler.newJmpSrc(), Call::LinkableNear);
     }
 
-    Call call()
-    {
-        m_assembler.lui(MIPSRegisters::t9, 0);
-        m_assembler.ori(MIPSRegisters::t9, MIPSRegisters::t9, 0);
-        m_assembler.jalr(MIPSRegisters::t9);
-        m_assembler.nop();
-        return Call(m_assembler.newJmpSrc(), Call::Linkable);
-    }
+    Call call();
 
-    Call call(RegisterID target)
-    {
-        m_assembler.jalr(target);
-        m_assembler.nop();
-        return Call(m_assembler.newJmpSrc(), Call::None);
-    }
+    Call call(RegisterID target);
 
-    Call call(Address address)
-    {
-        m_fixedWidth = true;
-        load32(address, MIPSRegisters::t9);
-        m_assembler.jalr(MIPSRegisters::t9);
-        m_assembler.nop();
-        m_fixedWidth = false;
-        return Call(m_assembler.newJmpSrc(), Call::None);
-    }
+    Call call(Address address);
+
+    void offsetFromPCToV0(int offset);
 
     void ret()
     {

@@ -150,8 +150,9 @@ IonRuntime::generateEnterJIT(JSContext *cx)
         Call passed-in code, get return value and fill in the
         passed in return value pointer
     ***************************************************************/
-    //arm : masm.ma_callIonNoPush
-    masm.call(Operand(fp, ARG_JITCODE));
+//ok    //arm : masm.ma_callIonNoPush
+//ok    masm.call(Operand(fp, ARG_JITCODE));
+    masm.ma_callIonHalfPush(a0);//ok
 
     // Pop arguments off the stack.
     // eax <- 8*argc (size of all arguments we pushed on the stack)
@@ -330,8 +331,9 @@ IonRuntime::generateArgumentsRectifier(JSContext *cx)
     masm.movl(Operand(t6, offsetof(JSScript, ion)), t6);
     masm.movl(Operand(t6, IonScript::offsetOfMethod()), t6);
     masm.movl(Operand(t6, IonCode::offsetOfCode()), t6);
-    //arm : masm.ma_callIonHalfPush
-    masm.call(t6);
+//ok    //arm : masm.ma_callIonHalfPush
+//ok    masm.call(t6);
+    masm.ma_callIonHalfPush(t6);
 
     // Remove the rectifier frame.
     masm.pop(s1);            // ebx <- descriptor with FrameType.
@@ -447,7 +449,7 @@ IonRuntime::generateVMWrapper(JSContext *cx, const VMFunction &f)
     // Generate a separated code for the wrapper.
     MacroAssembler masm;
 
-    masm.push(ra);
+    //masm.push(ra);
     // Avoid conflicts with argument registers while discarding the result after
     // the function call.
     GeneralRegisterSet regs = GeneralRegisterSet(Register::Codes::WrapperMask);

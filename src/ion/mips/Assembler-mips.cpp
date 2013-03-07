@@ -382,7 +382,76 @@ Assembler::retn(Imm32 n) {
 void 
 Assembler::call(IonCode *target) {
 //ok        JmpSrc src = masm.call();
-    //arm : ma_callIonHalfPush from MacroAsse..-arm.h
-    JmpSrc src = mcss.call().m_jmp;
+//ok    //arm : ma_callIonHalfPush from MacroAsse..-arm.h
+    mcss.offsetFromPCToV0(sizeof(int*)*7);//2insns
+    mcss.push(mRegisterID(v0.code()));//2insns
+    JmpSrc src = mcss.call().m_jmp;//3insns
     addPendingJump(src, target->raw(), Relocation::IONCODE);
+}
+void 
+Assembler::call(ImmWord target) {
+//ok        JmpSrc src = masm.call();
+    //arm : ma_call((void *) word.value);
+    JmpSrc src = mcss.call().m_jmp;
+    addPendingJump(src, target.asPointer(), Relocation::HARDCODED);
+}
+// ARM says that all reads of pc will return 8 higher than the
+// address of the currently executing instruction.  This means we are
+// correctly storing the address of the instruction after the call
+// in the register.
+// Also ION is breaking the ARM EABI here (sort of). The ARM EABI
+// says that a function call should move the pc into the link register,
+// then branch to the function, and *sp is data that is owned by the caller,
+// not the callee.  The ION ABI says *sp should be the address that
+// we will return to when leaving this function
+Assembler::JmpSrc
+Assembler::ma_callIon(const Register r)
+{
+    // When the stack is 8 byte aligned,
+    // we want to decrement sp by 8, and write pc+8 into the new sp.
+    // when we return from this call, sp will be its present value minus 4.
+    //as_dtr(IsStore, 32, PreIndex, pc, DTRAddr(sp, DtrOffImm(-8)));
+    //as_blx(r);
+//ok
+    mcss.offsetFromPCToV0(sizeof(int*)*6);
+    mcss.sub32(mTrustedImm32(4), sp.code());
+    mcss.push(mRegisterID(v0.code()));
+    JmpSrc src = mcss.call(r.code()).m_jmp;
+    return src;
+}
+
+Assembler::JmpSrc
+Assembler::ma_callIonNoPush(const Register r)
+{
+    // Since we just write the return address into the stack, which is
+    // popped on return, the net effect is removing 4 bytes from the stack
+    //as_dtr(IsStore, 32, Offset, pc, DTRAddr(sp, DtrOffImm(0)));
+//ok    //as_blx(r);
+    mcss.offsetFromPCToV0(sizeof(int*)*6);
+    mcss.add32(mTrustedImm32(4), sp.code());
+    mcss.push(mRegisterID(v0.code()));
+    JmpSrc src = mcss.call(r.code()).m_jmp;
+    return src;
+}
+
+Assembler::JmpSrc
+Assembler::ma_callIonHalfPush(const Register r)
+{
+    // The stack is unaligned by 4 bytes.
+    // We push the pc to the stack to align the stack before the call, when we
+    // return the pc is poped and the stack is restored to its unaligned state.
+    //ma_push(pc);
+    //as_blx(r);
+    mcss.offsetFromPCToV0(sizeof(int*)*5);
+    mcss.push(mRegisterID(v0.code()));
+    JmpSrc src = mcss.call(r.code()).m_jmp;
+    return src;
+}
+
+Assembler::JmpSrc
+Assembler::ma_call(void *dest) // KEEP EMPTY
+{
+    JS_NOT_REACHED("no use!");
+    //ma_mov(Imm32((uint32)dest), CallReg);
+    //as_blx(CallReg);
 }

@@ -22,7 +22,7 @@ MacroAssemblerMIPS::setupABICall(uint32 args)
 
     args_ = args;
     passedArgs_ = 0;
-    stackForCall_ = 0;
+    stackForCall_ = 16;
 //    subl(Imm32(16), sp);
 }
 
@@ -107,7 +107,7 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
     }
 
     reserveStack(stackAdjust);
-    subl(Imm32(16), StackPointer);
+//    subl(Imm32(16), StackPointer);
 
     // Position all arguments.
     {
@@ -132,9 +132,10 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
     }
 #endif
 
+//ok    //ma_call
     call(ImmWord(fun));
 
-    addl(Imm32(16), StackPointer);
+//    addl(Imm32(16), StackPointer);
     freeStack(stackAdjust);
     if (result == DOUBLE) {
         reserveStack(sizeof(double));
@@ -221,7 +222,7 @@ MacroAssemblerMIPS::callWithExitFrame(IonCode *target, Register dynStack) {
     addPtr(Imm32(framePushed()), dynStack);
     makeFrameDescriptor(dynStack, IonFrame_OptimizedJS);
     Push(dynStack);
-    //arm : ma_callIonHalfPush
+//ok    //arm : ma_callIonHalfPush
     call(target);
 }
 
@@ -230,7 +231,7 @@ MacroAssemblerMIPS::callWithExitFrame(IonCode *target) {
     uint32 descriptor = MakeFrameDescriptor(framePushed(), IonFrame_OptimizedJS);
 //cause failure when descriptor==0x4e0
     Push(Imm32(descriptor));
-    //arm : ma_callIonHalfPush
+//ok    //arm : ma_callIonHalfPush
     call(target);
 }
 
@@ -245,7 +246,15 @@ MacroAssemblerMIPS::callIon(const Register &callee) {
         ma_callIon(callee);
     }
 */
-    call(callee);
+//ok    call(callee);
+    JS_ASSERT((framePushed() & 3) == 0);
+    if ((framePushed() & 7) == 4) {
+        ma_callIonHalfPush(callee);//ok
+    } else {
+        //adjustFrame(sizeof(void*));
+        setFramePushed(framePushed_ + sizeof(void*));
+        ma_callIon(callee);//ok
+    }
 }
 
 
@@ -254,7 +263,10 @@ MacroAssemblerMIPS::enterOsr(Register calleeToken, Register code) {
     push(Imm32(0)); // num actual args.
     push(calleeToken);
     push(Imm32(MakeFrameDescriptor(0, IonFrame_Osr)));
-    //arm : ma_callIonHalfPush
-    call(code);
+//ok    //arm : ma_callIonHalfPush
+//ok    call(code);
+    ma_callIonHalfPush(code);
+#if ! defined (JS_CPU_MIPS)
     addl(Imm32(sizeof(uintptr_t) * 2), sp);
+#endif
 }

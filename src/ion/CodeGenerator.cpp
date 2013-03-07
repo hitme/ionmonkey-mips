@@ -1258,7 +1258,7 @@ CodeGenerator::generateArgumentsChecks()
     // this before falling through to the method proper though, because the
     // monomorphic call case will bypass this entire path.
 
-#if 1 && defined JS_CPU_MIPS
+#if 0 && defined JS_CPU_MIPS
     masm.push(ra);
 #endif
     masm.reserveStack(frameSize());

@@ -642,11 +642,16 @@ class Assembler
         j(cond, target->raw(), Relocation::IONCODE);
     }
     void call(IonCode *target);
-    void call(ImmWord target) {
-//ok        JmpSrc src = masm.call();
-        JmpSrc src = mcss.call().m_jmp;
-        addPendingJump(src, target.asPointer(), Relocation::HARDCODED);
-    }
+    void call(ImmWord target);
+
+    // calls an Ion function, assumes that the stack is untouched (8 byte alinged)
+    JmpSrc ma_callIon(const Register reg);
+    // callso an Ion function, assuming that sp has already been decremented
+    JmpSrc ma_callIonNoPush(const Register reg);
+    // calls an ion function, assuming that the stack is currently not 8 byte aligned
+    JmpSrc ma_callIonHalfPush(const Register reg);
+
+    JmpSrc ma_call(void *dest);
 
     // Re-routes pending jumps to an external target, flushing the label in the
     // process.
