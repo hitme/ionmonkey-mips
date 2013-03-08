@@ -46,8 +46,6 @@ IonRuntime::generateEnterJIT(JSContext *cx)
     // Save non-volatile registers. These must be saved by the trampoline,
     // rather than the JIT'd code, because they are scanned by the conservative
     // scanner.
-    masm.push(a2);
-    masm.push(a3);
     masm.push(t0);
     masm.push(t1);
     masm.push(t2);
@@ -193,8 +191,6 @@ IonRuntime::generateEnterJIT(JSContext *cx)
     masm.pop(t2);
     masm.pop(t1);
     masm.pop(t0);
-    masm.pop(a3);
-    masm.pop(a2);
 
     // Restore old stack frame pointer
     masm.pop(fp);
