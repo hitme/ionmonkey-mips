@@ -641,17 +641,6 @@ class Assembler
     void j(DoubleCondition cond, IonCode *target) {
         j(cond, target->raw(), Relocation::IONCODE);
     }
-    void call(IonCode *target);
-    void call(ImmWord target);
-
-    // calls an Ion function, assumes that the stack is untouched (8 byte alinged)
-    JmpSrc ma_callIon(const Register reg);
-    // callso an Ion function, assuming that sp has already been decremented
-    JmpSrc ma_callIonNoPush(const Register reg);
-    // calls an ion function, assuming that the stack is currently not 8 byte aligned
-    JmpSrc ma_callIonHalfPush(const Register reg);
-
-    JmpSrc ma_call(void *dest);
 
     // Re-routes pending jumps to an external target, flushing the label in the
     // process.
@@ -1123,34 +1112,22 @@ class Assembler
         mcss.ret();
     }
     void retn(Imm32 n);
-    void call(Label *label) {
-        if (label->bound()) {
-//ok            masm.linkJump(mcss.call(), JmpDst(label->offset()));
-            masm.linkJump(mcss.call().m_jmp, JmpDst(label->offset()));
-        } else {
-//ok            JmpSrc j = mcss.call();
-            JmpSrc j = mcss.call().m_jmp;
-            JmpSrc prev = JmpSrc(label->use(j.offset()));
-            masm.setNextJump(j, prev);
-        }
-    }
-    void call(const Register &reg) {
-        mcss.call(reg.code());
-    }
-    void call(const Operand &op) {
-        switch (op.kind()) {
-          case Operand::REG:
-            mcss.call(op.reg());
-            break;
-          case Operand::REG_DISP:
-//ok            masm.call_m(op.disp(), op.base());
-            mcss.call(mAddress(op.base(), op.disp()));
-            break;
-          default:
-            JS_NOT_REACHED("unexpected operand kind");
-        }
-    }
+    JmpSrc callWithPush();
+    void call(Label *label);
+    void call(const Register &reg);
+    void call(const Operand &op);
 
+    void call(IonCode *target);
+    void call(ImmWord target);
+
+    // calls an Ion function, assumes that the stack is untouched (8 byte alinged)
+    JmpSrc ma_callIon(const Register reg);
+    // callso an Ion function, assuming that sp has already been decremented
+    JmpSrc ma_callIonNoPush(const Register reg);
+    // calls an ion function, assuming that the stack is currently not 8 byte aligned
+    JmpSrc ma_callIonHalfPush(const Register reg);
+
+    JmpSrc ma_call(void *dest);
     void breakpoint() {
 //ok        masm.int3();
         mcss.breakpoint();

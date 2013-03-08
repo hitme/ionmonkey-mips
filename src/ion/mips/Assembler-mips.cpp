@@ -392,8 +392,56 @@ void
 Assembler::call(ImmWord target) {
 //ok        JmpSrc src = masm.call();
     //arm : ma_call((void *) word.value);
+//    mcss.offsetFromPCToV0(sizeof(int*)*7);//2insns
+//    mcss.push(mRegisterID(v0.code()));//2insns
     JmpSrc src = mcss.call().m_jmp;
     addPendingJump(src, target.asPointer(), Relocation::HARDCODED);
+}
+
+Assembler::JmpSrc
+Assembler::callWithPush() 
+{
+    mcss.offsetFromPCToV0(sizeof(int*)*7);//2insns
+    mcss.push(mRegisterID(v0.code()));//2insns
+    JmpSrc src = mcss.call().m_jmp;
+    return src;
+}
+
+void 
+Assembler::call(Label *label) {
+    if (label->bound()) {
+//ok            masm.linkJump(mcss.call(), JmpDst(label->offset()));
+//ok    masm.linkJump(mcss.call().m_jmp, JmpDst(label->offset()));
+    masm.linkJump(callWithPush(), JmpDst(label->offset()));
+} else {
+//ok            JmpSrc j = mcss.call();
+//ok        JmpSrc j = mcss.call().m_jmp;
+        JmpSrc j = callWithPush();
+        JmpSrc prev = JmpSrc(label->use(j.offset()));
+        masm.setNextJump(j, prev);
+    }
+}
+void 
+Assembler::call(const Register &reg) {
+//ok    mcss.call(reg.code());
+    ma_callIonHalfPush(reg);
+}
+void 
+Assembler::call(const Operand &op) {
+    switch (op.kind()) {
+      case Operand::REG:
+//ok        mcss.call(op.reg());
+        ma_callIonHalfPush(Register::FromCode((int)(op.reg()))); //force cast
+        break;
+      case Operand::REG_DISP:
+//ok            masm.call_m(op.disp(), op.base());
+//ok        mcss.call(mAddress(op.base(), op.disp()));
+        mcss.load32(mAddress(op.base(), op.disp()), v1.code());
+        ma_callIonHalfPush(v1);
+        break;
+      default:
+        JS_NOT_REACHED("unexpected operand kind");
+    }
 }
 // ARM says that all reads of pc will return 8 higher than the
 // address of the currently executing instruction.  This means we are

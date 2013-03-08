@@ -97,9 +97,15 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
 
     uint32 stackAdjust;
     if (dynamicAlignment_) {
+#if 0
+        stackAdjust = stackForCall_
+                    + ComputeByteAlignment(stackForCall_,
+                                           StackAlignment);
+#else
         stackAdjust = stackForCall_
                     + ComputeByteAlignment(stackForCall_ + STACK_SLOT_SIZE,
                                            StackAlignment);
+#endif
     } else {
         stackAdjust = stackForCall_
                     + ComputeByteAlignment(stackForCall_ + framePushed_,
@@ -247,6 +253,8 @@ MacroAssemblerMIPS::callIon(const Register &callee) {
     }
 */
 //ok    call(callee);
+    ma_callIonHalfPush(callee);//ok
+#if 0 //try above line
     JS_ASSERT((framePushed() & 3) == 0);
     if ((framePushed() & 7) == 4) {
         ma_callIonHalfPush(callee);//ok
@@ -255,6 +263,7 @@ MacroAssemblerMIPS::callIon(const Register &callee) {
         setFramePushed(framePushed_ + sizeof(void*));
         ma_callIon(callee);//ok
     }
+#endif
 }
 
 
