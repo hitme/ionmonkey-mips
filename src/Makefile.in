@@ -378,6 +378,7 @@ CPPSRCS +=	Lowering-mips.cpp \
 		Bailouts-mips.cpp \
 		IonFrames-mips.cpp \
 		MoveEmitter-mips.cpp \
+		Architecture-mips.cpp \
 		MacroAssembler-mips.cpp \
 		$(NULL)
 endif #ENABLE_ION
