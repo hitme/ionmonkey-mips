@@ -384,9 +384,9 @@ void
 Assembler::call(IonCode *target) {
 //ok        JmpSrc src = masm.call();
 //ok    //arm : ma_callIonHalfPush from MacroAsse..-arm.h
-    mcss.offsetFromPCToV0(sizeof(int*)*7);//2insns
+    mcss.offsetFromPCToV0(sizeof(int*)*7);//1insns
     mcss.push(mRegisterID(v0.code()));//2insns
-    JmpSrc src = mcss.call().m_jmp;//3insns
+    JmpSrc src = mcss.call().m_jmp;//4insns
     addPendingJump(src, target->raw(), Relocation::IONCODE);
 }
 void 
@@ -402,9 +402,9 @@ Assembler::call(ImmWord target) {
 Assembler::JmpSrc
 Assembler::callWithPush() 
 {
-    mcss.offsetFromPCToV0(sizeof(int*)*7);//2insns
+    mcss.offsetFromPCToV0(sizeof(int*)*7);//1insns
     mcss.push(mRegisterID(v0.code()));//2insns
-    JmpSrc src = mcss.call().m_jmp;
+    JmpSrc src = mcss.call().m_jmp;//4insns
     return src;
 }
 
@@ -462,10 +462,10 @@ Assembler::ma_callIon(const Register r)
     //as_dtr(IsStore, 32, PreIndex, pc, DTRAddr(sp, DtrOffImm(-8)));
     //as_blx(r);
 //ok
-    mcss.offsetFromPCToV0(sizeof(int*)*6);
-    mcss.sub32(mTrustedImm32(4), sp.code());
-    mcss.push(mRegisterID(v0.code()));
-    JmpSrc src = mcss.call(r.code()).m_jmp;
+    mcss.offsetFromPCToV0(sizeof(int*)*6);//1insns
+    mcss.sub32(mTrustedImm32(4), sp.code());//1insns
+    mcss.push(mRegisterID(v0.code()));//2insns
+    JmpSrc src = mcss.call(r.code()).m_jmp;//2insns
     return src;
 }
 
@@ -476,10 +476,10 @@ Assembler::ma_callIonNoPush(const Register r)
     // popped on return, the net effect is removing 4 bytes from the stack
     //as_dtr(IsStore, 32, Offset, pc, DTRAddr(sp, DtrOffImm(0)));
 //ok    //as_blx(r);
-    mcss.offsetFromPCToV0(sizeof(int*)*6);
-    mcss.add32(mTrustedImm32(4), sp.code());
-    mcss.push(mRegisterID(v0.code()));
-    JmpSrc src = mcss.call(r.code()).m_jmp;
+    mcss.offsetFromPCToV0(sizeof(int*)*6);//1insns
+    mcss.add32(mTrustedImm32(4), sp.code());//1insns
+    mcss.push(mRegisterID(v0.code()));//2insns
+    JmpSrc src = mcss.call(r.code()).m_jmp;//2insns
     return src;
 }
 
@@ -491,9 +491,9 @@ Assembler::ma_callIonHalfPush(const Register r)
     // return the pc is poped and the stack is restored to its unaligned state.
     //ma_push(pc);
     //as_blx(r);
-    mcss.offsetFromPCToV0(sizeof(int*)*5);
-    mcss.push(mRegisterID(v0.code()));
-    JmpSrc src = mcss.call(r.code()).m_jmp;
+    mcss.offsetFromPCToV0(sizeof(int*)*5);//1insns
+    mcss.push(mRegisterID(v0.code()));//2insns
+    JmpSrc src = mcss.call(r.code()).m_jmp;//2insns
     return src;
 }
 
