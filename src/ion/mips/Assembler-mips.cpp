@@ -545,7 +545,7 @@ Assembler::patchWrite_NearCall(CodeLocationLabel startLabel, CodeLocationLabel t
     *start = 0x3c190000 | hg;
     *(start + 1) = 0x37390000 | lw;
     *(start + 2) = 0x0320f809;
-    *(start + 4) = 0x24420000 | 0x18;
+    *(start + 4) = 0x24420000 | 0x14;
     *(start + 5) = 0x27bdfffc;
     *(start + 6) = 0xafa20000;
     *(start + 7) = 0x0c000000 | (((reinterpret_cast<intptr_t>(to)) >> 2) & 0x3ffffff);
