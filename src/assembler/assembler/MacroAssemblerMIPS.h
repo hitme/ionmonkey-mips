@@ -2025,15 +2025,7 @@ public:
         m_assembler.bkpt();
     }
 
-    Call nearCall()
-    {
-        /* We need two words for relaxation.  */
-        m_assembler.nop();
-        m_assembler.nop();
-        m_assembler.jal();
-        m_assembler.nop();
-        return Call(m_assembler.newJmpSrc(), Call::LinkableNear);
-    }
+    Call nearCall();
 
     Call call();
 
@@ -2678,6 +2670,9 @@ public:
     {
         /* We need four words for relaxation. */
         m_assembler.beq(MIPSRegisters::zero, MIPSRegisters::zero, 3); // Jump over nops;
+        m_assembler.nop();
+        m_assembler.nop();
+        m_assembler.nop();
         m_assembler.nop();
         m_assembler.nop();
         m_assembler.nop();

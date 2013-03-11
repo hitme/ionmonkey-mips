@@ -202,9 +202,10 @@ Assembler::TraceJumpRelocations(JSTracer *trc, IonCode *code, CompactBufferReade
 
 void
 Assembler::patchWrite_Imm32(CodeLocationLabel dataLabel, Imm32 toWrite) {
-    ASSERT(0);
+   // ASSERT(0);
 //TBD
-    *((int32 *) dataLabel.raw() - 1) = toWrite.value;
+//ok    *((int32 *) dataLabel.raw() - 1) = toWrite.value;
+    JSC::MIPSAssembler::setInt32((int32 *) dataLabel.raw(), toWrite.value);
 }
 
 void
@@ -502,4 +503,61 @@ Assembler::ma_call(void *dest) // KEEP EMPTY
     JS_NOT_REACHED("no use!");
     //ma_mov(Imm32((uint32)dest), CallReg);
     //as_blx(CallReg);
+}
+
+size_t 
+Assembler::patchWrite_NearCallSize() {
+//TBD ok
+    return 36;
+}
+
+static unsigned int* __getpc(void)
+{
+    unsigned int *rtaddr;
+    
+    __asm__ volatile ("move %0, $31" : "=r"(rtaddr));
+    
+    return rtaddr;
+}
+
+// Write a relative call at the start location |dataLabel|.
+// Note that this DOES NOT patch data that comes before |label|.
+void 
+Assembler::patchWrite_NearCall(CodeLocationLabel startLabel, CodeLocationLabel target) {
+//TBD ok
+    unsigned lw, hg;
+    hg = ((unsigned int)__getpc)>>16;
+    lw = ((unsigned int)__getpc)&0xffff;
+
+    uint32_t *start = (uint32_t*)startLabel.raw();
+    uint32_t *to = (uint32_t*)target.raw();
+    JS_ASSERT((reinterpret_cast<intptr_t>(start)) >> 28 == (reinterpret_cast<intptr_t>(to)) >> 28);
+    start -= 9;
+    JS_ASSERT(*(start + 1) == 0);
+    JS_ASSERT(*(start + 2) == 0x10000003);
+    JS_ASSERT(*(start + 3) == 0);
+    JS_ASSERT(*(start + 4) == 0);
+    JS_ASSERT(*(start + 5) == 0);
+    JS_ASSERT(*(start + 6) == 0);
+    JS_ASSERT(*(start + 7) == 0);
+    JS_ASSERT(*(start + 8) == 0);
+
+    *start = 0x3c190000 | hg;
+    *(start + 1) = 0x37390000 | lw;
+    *(start + 2) = 0x0320f809;
+    *(start + 4) = 0x24420000 | 0x24;
+    *(start + 5) = 0x27bdfffc;
+    *(start + 6) = 0xafa20000;
+    *(start + 7) = 0x0c000000 | (((reinterpret_cast<intptr_t>(to)) >> 2) & 0x3ffffff);
+}
+
+uintptr_t 
+Assembler::getPointer(uint8 *instPtr) {
+//TBD
+    uintptr_t *ptr = ((uintptr_t *) instPtr) - 1;
+    return *ptr;
+}
+uint32 
+Assembler::nopSize() {
+    return 4;
 }

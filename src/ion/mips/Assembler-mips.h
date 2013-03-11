@@ -1782,30 +1782,11 @@ class Assembler
 
     // Patching.
 
-    static size_t patchWrite_NearCallSize() {
-//TBD ok
-        return 16;
-    }
-    static uintptr_t getPointer(uint8 *instPtr) {
-//TBD
-        uintptr_t *ptr = ((uintptr_t *) instPtr) - 1;
-        return *ptr;
-    }
+    static size_t patchWrite_NearCallSize();
+    static uintptr_t getPointer(uint8 *instPtr);
     // Write a relative call at the start location |dataLabel|.
     // Note that this DOES NOT patch data that comes before |label|.
-    static void patchWrite_NearCall(CodeLocationLabel startLabel, CodeLocationLabel target) {
-//TBD ok
-        uint32_t *start = (uint32_t*)startLabel.raw();
-        *start = 0;
-        *(start + 1) = 0;
-        *(start + 3) = 0;
-        start += 2;
-        *start = 0x0c000000;
-        ptrdiff_t offset = target - startLabel - patchWrite_NearCallSize();
-        offset &= 0x03ffffff;
-        JS_ASSERT(int32(offset) == offset);
-        *start |= offset >> 2;
-    }
+    static void patchWrite_NearCall(CodeLocationLabel startLabel, CodeLocationLabel target); 
 
     static void patchWrite_Imm32(CodeLocationLabel dataLabel, Imm32 toWrite);
 
@@ -1820,9 +1801,7 @@ class Assembler
         JS_ASSERT(old == expectedData.value);
         JSC::MIPSAssembler::setInt32(((uint8_t *)data.raw()), (newData.value));
     }
-    static uint32 nopSize() {
-        return 1;
-    }
+    static uint32 nopSize();
     static uint8 *nextInstruction(uint8 *cur, uint32 *count) {
         JS_NOT_REACHED("nextInstruction NYI on x86");
     }
