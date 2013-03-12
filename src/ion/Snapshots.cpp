@@ -185,14 +185,10 @@ static const uint32 NUNBOX32_REG_REG     = 3;
 
 static const uint32 MAX_TYPE_FIELD_VALUE = 7;
 
-static const uint32 MAX_REG_FIELD_VALUE  = 31;
-static const uint32 ESC_REG_FIELD_INDEX  = 31;
-static const uint32 ESC_REG_FIELD_CONST  = 30;
-#if defined(JS_CPU_MIPS)
-static const uint32 MIN_REG_FIELD_ESC    = 33;//TBD
-#else
-static const uint32 MIN_REG_FIELD_ESC    = 30;//TBD
-#endif
+static const uint32 MAX_REG_FIELD_VALUE  = 63;
+static const uint32 ESC_REG_FIELD_INDEX  = 63;
+static const uint32 ESC_REG_FIELD_CONST  = 62;
+static const uint32 MIN_REG_FIELD_ESC    = 63;//TBD
 
 SnapshotReader::Slot
 SnapshotReader::readSlot()
@@ -201,7 +197,8 @@ SnapshotReader::readSlot()
     IonSpew(IonSpew_Snapshots, "Reading slot %u", slotsRead_);
     slotsRead_++;
 
-    uint8 b = reader_.readByte();
+//    uint8 b = reader_.readByte();
+    uint16 b = reader_.readFixedUint16();
 
     JSValueType type = JSValueType(b & 0x7);
     uint32 code = b >> 3;
@@ -371,8 +368,13 @@ SnapshotWriter::writeSlotHeader(JSValueType type, uint32 regCode)
     JS_ASSERT(uint32(regCode) <= MAX_REG_FIELD_VALUE);
     JS_STATIC_ASSERT(Registers::Total < MIN_REG_FIELD_ESC);
 
-    uint8 byte = uint32(type) | (regCode << 3);
-    writer_.writeByte(byte);
+//    uint8 byte = uint32(type) | (regCode << 3);
+    uint16 twoBytes = uint32(type) | (regCode << 3);
+    uint8 b1,b2;
+    b1 = twoBytes;
+    b2 = twoBytes >> 8;
+    writer_.writeByte(b1);
+    writer_.writeByte(b2);
 
     slotsWritten_++;
     JS_ASSERT(slotsWritten_ <= nslots_);
