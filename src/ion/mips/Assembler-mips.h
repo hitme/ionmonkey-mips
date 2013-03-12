@@ -193,7 +193,7 @@ class Operand
     };
 
     Kind kind_ : 4;
-    int32 index_ : 5;
+    int32 index_ : 6;
     Scale scale_ : 3;
     int32 base_;
     int32 disp_;
@@ -253,6 +253,7 @@ class Operand
     }
     Registers::Code index() const {
         JS_ASSERT(kind() == SCALE);
+        JS_ASSERT( index_ > 0 );
         return (Registers::Code)index_;
     }
     Scale scale() const {
