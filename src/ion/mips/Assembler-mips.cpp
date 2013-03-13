@@ -239,6 +239,7 @@ Assembler::xorpd(const FloatRegister &src, const FloatRegister &dest) {
 void
 Assembler::pcmpeqw(const FloatRegister &lhs, const FloatRegister &rhs) {
     ASSERT(0);
+    //only usecase MacroAssemblerMIPS:maybeInlineDouble CodeGeneratorMIPS:visitNegD
 //        masm.pcmpeqw_rr(rhs.code(), lhs.code());
 }    
 void
@@ -255,28 +256,30 @@ Assembler::movmskpd(const FloatRegister &src, const Register &dest) {
 
 void
 Assembler::cdq() {
-    ASSERT(0);
+//ok    ASSERT(0);
 //        masm.cdq();
 }
 void
 Assembler::idiv(Register dest) {
-    ASSERT(0);
+//ok    ASSERT(0);
+        masm.div(t6.code(), dest.code());
+        masm.mflo(dest.code());
 //        masm.idivl_r(dest.code());
 }
 
 void
 Assembler::unpcklps(const FloatRegister &src, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(0); //ok
 //        masm.unpcklps_rr(src.code(), dest.code());
 }
 void
 Assembler::pinsrd(const Register &src, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(0); //ok
 //        masm.pinsrd_rr(src.code(), dest.code());
 }
 void
 Assembler::pinsrd(const Operand &src, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(0); //ok
     switch (src.kind()) {
       case Operand::REG:
 //            masm.pinsrd_rr(src.reg(), dest.code());
@@ -290,17 +293,19 @@ Assembler::pinsrd(const Operand &src, const FloatRegister &dest) {
 }
 void
 Assembler::psrldq(Imm32 shift, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(0);//ok
 //        masm.psrldq_rr(dest.code(), shift.value);
 }
 void
 Assembler::psllq(Imm32 shift, const FloatRegister &dest) {
     ASSERT(0);
+    //only usecase MacroAssemblerMIPS:maybeInlineDouble CodeGeneratorMIPS:visitNegD
 //        masm.psllq_rr(dest.code(), shift.value);
 }
 void
 Assembler::psrlq(Imm32 shift, const FloatRegister &dest) {
     ASSERT(0);
+    //only usecase maybeInlineDouble
 //        masm.psrlq_rr(dest.code(), shift.value);
 }
 

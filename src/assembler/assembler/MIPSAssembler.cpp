@@ -319,7 +319,13 @@ namespace JSC {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
         int32_t offset = -2;
 
-        insn -= 2;
+        insn -= 4;
+        if(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000)){
+            //move mem to gpr
+        }else{
+            //move mem to fpr
+            insn -= 2;
+        }
 		ASSERT(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000));
         offset = (*insn & 0x0000ffff) << 16; // lui
         offset |= (*(insn + 1) & 0x0000ffff); // ori
@@ -345,8 +351,14 @@ namespace JSC {
         //reinterpret_cast<const void**>(where)[-1] = value;
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
         int32_t offset = -2;
-        insn -= 2;
 
+        insn -= 4;
+        if(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000)){
+            //move mem to gpr
+        }else{
+            //move mem to fpr
+            insn -= 2;
+        }
 		ASSERT(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000));
         offset = reinterpret_cast<int32_t>(value);
         *insn &= 0xffff0000;
@@ -456,6 +468,7 @@ namespace JSC {
                 int high = (*insn & 0xffff) << 16;
                 int low = *(insn + 1) & 0xffff;
                 int oldTargetAddress = high | low;
+                if((oldTargetAddress >= -(m_buffer.size()) || oldTargetAddress >= -128) && oldTargetAddress <= m_buffer.size()) continue;
                 int newTargetAddress = oldTargetAddress - (int)oldBase + (int)newBase;
                 /* lui */
                 *insn = 0x3c000000 | (MIPSRegisters::t9 << OP_SH_RT) | ((newTargetAddress >> 16) & 0xffff);
