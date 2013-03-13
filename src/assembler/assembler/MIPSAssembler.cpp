@@ -319,12 +319,17 @@ namespace JSC {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
         int32_t offset = -2;
 
-        insn -= 4;
+        insn -= 2;
         if(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000)){
-            //move mem to gpr
+            //load mem
         }else{
-            //move mem to fpr
             insn -= 2;
+            if(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000)){
+                //move mem to gpr
+            }else{
+                //move mem to fpr
+                insn -= 2;
+            }
         }
 		ASSERT(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000));
         offset = (*insn & 0x0000ffff) << 16; // lui
@@ -352,12 +357,17 @@ namespace JSC {
         MIPSWord* insn = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(where));
         int32_t offset = -2;
 
-        insn -= 4;
+        insn -= 2;
         if(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000)){
-            //move mem to gpr
+            //load mem
         }else{
-            //move mem to fpr
             insn -= 2;
+            if(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000)){
+                //move mem to gpr
+            }else{
+                //move mem to fpr
+                insn -= 2;
+            }
         }
 		ASSERT(((*(insn) & 0xfc000000) == 0x3c000000) && (((*(insn + 1)) & 0xfc000000) == 0x34000000));
         offset = reinterpret_cast<int32_t>(value);
