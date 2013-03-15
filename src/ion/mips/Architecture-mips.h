@@ -59,10 +59,10 @@ public:
     static const Code StackPointer = JSC::MIPSRegisters::sp; 
     static const Code Invalid = JSC::MIPSRegisters::invalid_reg;
 
-    static const uint32 Total = 32; //TBD:must be smaller than MIN_REG_FIELD_ESC(30), defined in Snapshots.cpp
+    static const uint32 Total = 30; //TBD:must be smaller than MIN_REG_FIELD_ESC(30), defined in Snapshots.cpp
     static const uint32 Allocatable = 11; 
 
-    static const uint32 AllMask = 0xffffffff;
+    static const uint32 AllMask = (1 << Total) - 1;
     //static const uint32 ArgRegMask = 0x1f;
     static const uint32 ArgRegMask = 0;
 
@@ -151,10 +151,10 @@ class FloatRegisters
 
     static const Code Invalid = JSC::MIPSRegisters::invalid_freg;    
 
-    static const uint32 Total = 32;//strictly SMALLER than 32
+    static const uint32 Total = 31;//strictly SMALLER than 32
     static const uint32 Allocatable = 29;
 
-    static const uint32 AllMask = 0xffffffff;
+    static const uint32 AllMask = (1 << Total) - 1;
 
     static const uint32 VolatileMask = AllMask;
     static const uint32 NonVolatileMask = 0;
@@ -163,8 +163,7 @@ class FloatRegisters
 
     // d0 is the ARM scratch float register.
     static const uint32 NonAllocatableMask = 
-        (1 << JSC::MIPSRegisters::f0) |
-        (1 << JSC::MIPSRegisters::f2) |
+        (1 << JSC::MIPSRegisters::f1) |
         (1 << JSC::MIPSRegisters::f30);
 
     // Registers that can be allocated without being saved, generally.

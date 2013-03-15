@@ -279,16 +279,3 @@ MacroAssemblerMIPS::enterOsr(Register calleeToken, Register code) {
     addl(Imm32(sizeof(uintptr_t) * 2), sp);
 #endif
 }
-void 
-MacroAssemblerMIPS::moveValue(const Value &val, Register type, Register data) {
-    jsval_layout jv = JSVAL_TO_IMPL(val);
-    movl(Imm32(jv.s.tag), type);
-    if (val.isMarkable())
-        movl(ImmGCPtr(reinterpret_cast<gc::Cell *>(val.toGCThing())), data);
-    else
-        movl(Imm32(jv.s.payload.i32), data);
-}
-void 
-MacroAssemblerMIPS::moveValue(const Value &val, const ValueOperand &dest) {
-    moveValue(val, dest.typeReg(), dest.payloadReg());
-}

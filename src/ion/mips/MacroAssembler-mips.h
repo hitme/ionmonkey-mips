@@ -82,8 +82,17 @@ class MacroAssemblerMIPS : public Assembler
             return base; // Silence GCC warning.
         }
     }
-    void moveValue(const Value &val, Register type, Register data);
-    void moveValue(const Value &val, const ValueOperand &dest);
+    void moveValue(const Value &val, Register type, Register data) {
+        jsval_layout jv = JSVAL_TO_IMPL(val);
+        movl(Imm32(jv.s.tag), type);
+        if (val.isMarkable())
+            movl(ImmGCPtr(reinterpret_cast<gc::Cell *>(val.toGCThing())), data);
+        else
+            movl(Imm32(jv.s.payload.i32), data);
+    }
+    void moveValue(const Value &val, const ValueOperand &dest) {
+        moveValue(val, dest.typeReg(), dest.payloadReg());
+    }
 
     /////////////////////////////////////////////////////////////////
     // X86/X64-common interface.
@@ -509,10 +518,9 @@ class MacroAssemblerMIPS : public Assembler
 
     // Note: this function clobbers the source register.
     void boxDouble(const FloatRegister &src, const ValueOperand &dest) {
-//        movd(src, dest.payloadReg());
-//        psrldq(Imm32(4), src);
-//        movd(src, dest.typeReg());
-        fastStoreDouble(src, dest.payloadReg(), dest.typeReg());
+        movd(src, dest.payloadReg());
+        psrldq(Imm32(4), src);
+        movd(src, dest.typeReg());
     }
     void boxNonDouble(JSValueType type, const Register &src, const ValueOperand &dest) {
         if (src != dest.payloadReg())
@@ -533,34 +541,30 @@ class MacroAssemblerMIPS : public Assembler
     }
     void unboxDouble(const ValueOperand &src, const FloatRegister &dest) {
         JS_ASSERT(dest != ScratchFloatReg);
-#if 0
-//        if (0/*Assembler::HasSSE41()*/) {
-//            movd(src.payloadReg(), dest);
-//            pinsrd(src.typeReg(), dest);
-//        } else {
-//            movd(src.payloadReg(), dest);
-//            movd(src.typeReg(), ScratchFloatReg);
-//            unpcklps(ScratchFloatReg, dest);
-//        }
-#endif
-        fastLoadDouble(src.payloadReg(), src.typeReg(), dest);
+        if (0/*Assembler::HasSSE41()*/) {
+            movd(src.payloadReg(), dest);
+            pinsrd(src.typeReg(), dest);
+        } else {
+            movd(src.payloadReg(), dest);
+            movd(src.typeReg(), ScratchFloatReg);
+            unpcklps(ScratchFloatReg, dest);
+        }
     }
     void unboxDouble(const Operand &payload, const Operand &type,
                      const Register &scratch, const FloatRegister &dest) {
         JS_ASSERT(dest != ScratchFloatReg);
-        JS_ASSERT(0);
-//        if (0/*Assembler::HasSSE41()*/) {
-//            movl(payload, scratch);
-//            movd(scratch, dest);
-//            movl(type, scratch);
-//            pinsrd(scratch, dest);
-//        } else {
-//            movl(payload, scratch);
-//            movd(scratch, dest);
-//            movl(type, scratch);
-//            movd(scratch, ScratchFloatReg);
-//            unpcklps(ScratchFloatReg, dest);
-//        }
+        if (0/*Assembler::HasSSE41()*/) {
+            movl(payload, scratch);
+            movd(scratch, dest);
+            movl(type, scratch);
+            pinsrd(scratch, dest);
+        } else {
+            movl(payload, scratch);
+            movd(scratch, dest);
+            movl(type, scratch);
+            movd(scratch, ScratchFloatReg);
+            unpcklps(ScratchFloatReg, dest);
+        }
     }
     void unboxValue(const ValueOperand &src, AnyRegister dest) {
         if (dest.isFloat()) {

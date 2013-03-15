@@ -239,7 +239,6 @@ Assembler::xorpd(const FloatRegister &src, const FloatRegister &dest) {
 void
 Assembler::pcmpeqw(const FloatRegister &lhs, const FloatRegister &rhs) {
     ASSERT(0);
-    //only usecase MacroAssemblerMIPS:maybeInlineDouble CodeGeneratorMIPS:visitNegD
 //        masm.pcmpeqw_rr(rhs.code(), lhs.code());
 }    
 void
@@ -256,30 +255,28 @@ Assembler::movmskpd(const FloatRegister &src, const Register &dest) {
 
 void
 Assembler::cdq() {
-//ok    ASSERT(0);
+    ASSERT(0);
 //        masm.cdq();
 }
 void
 Assembler::idiv(Register dest) {
-//ok    ASSERT(0);
-        masm.div(t6.code(), dest.code());
-        masm.mflo(dest.code());
+    ASSERT(0);
 //        masm.idivl_r(dest.code());
 }
 
 void
 Assembler::unpcklps(const FloatRegister &src, const FloatRegister &dest) {
-    ASSERT(0); //ok
+    ASSERT(0);
 //        masm.unpcklps_rr(src.code(), dest.code());
 }
 void
 Assembler::pinsrd(const Register &src, const FloatRegister &dest) {
-    ASSERT(0); //ok
+    ASSERT(0);
 //        masm.pinsrd_rr(src.code(), dest.code());
 }
 void
 Assembler::pinsrd(const Operand &src, const FloatRegister &dest) {
-    ASSERT(0); //ok
+    ASSERT(0);
     switch (src.kind()) {
       case Operand::REG:
 //            masm.pinsrd_rr(src.reg(), dest.code());
@@ -293,19 +290,17 @@ Assembler::pinsrd(const Operand &src, const FloatRegister &dest) {
 }
 void
 Assembler::psrldq(Imm32 shift, const FloatRegister &dest) {
-    ASSERT(0);//ok
+    ASSERT(0);
 //        masm.psrldq_rr(dest.code(), shift.value);
 }
 void
 Assembler::psllq(Imm32 shift, const FloatRegister &dest) {
     ASSERT(0);
-    //only usecase MacroAssemblerMIPS:maybeInlineDouble CodeGeneratorMIPS:visitNegD
 //        masm.psllq_rr(dest.code(), shift.value);
 }
 void
 Assembler::psrlq(Imm32 shift, const FloatRegister &dest) {
     ASSERT(0);
-    //only usecase maybeInlineDouble
 //        masm.psrlq_rr(dest.code(), shift.value);
 }
 
@@ -536,17 +531,16 @@ Assembler::patchWrite_NearCall(CodeLocationLabel startLabel, CodeLocationLabel t
 
     uint32_t *start = (uint32_t*)startLabel.raw();
     uint32_t *to = (uint32_t*)target.raw();
-    start -= 5;
-//    JS_ASSERT((reinterpret_cast<intptr_t>(start)) >> 28 == (reinterpret_cast<intptr_t>(to)) >> 28);
-//    JS_ASSERT((*start & 0xffffffc0) == 0x14000000);
-//    JS_ASSERT(*(start + 1) == 0);
-//    JS_ASSERT((*(start + 2) & 0xffe00000) == 0x3c000000);
-//    JS_ASSERT((*(start + 3) & 0xfc000000) == 0x34000000);
-//    JS_ASSERT(*(start + 4) == 0x03200008);
-//    JS_ASSERT(*(start + 5) == 0);
-//    JS_ASSERT(*(start + 6) == 0);
-//    JS_ASSERT(*(start + 7) == 0);
-//    JS_ASSERT(*(start + 8) == 0);
+    JS_ASSERT((reinterpret_cast<intptr_t>(start)) >> 28 == (reinterpret_cast<intptr_t>(to)) >> 28);
+    JS_ASSERT((*start & 0xffffffc0) == 0x14000000);
+    JS_ASSERT(*(start + 1) == 0);
+    JS_ASSERT((*(start + 2) & 0xffe00000) == 0x3c000000);
+    JS_ASSERT((*(start + 3) & 0xfc000000) == 0x34000000);
+    JS_ASSERT(*(start + 4) == 0x03200008);
+    JS_ASSERT(*(start + 5) == 0);
+    JS_ASSERT(*(start + 6) == 0);
+    JS_ASSERT(*(start + 7) == 0);
+    JS_ASSERT(*(start + 8) == 0);
 
     *start = 0x3c190000 | hg;
     *(start + 1) = 0x37390000 | lw;

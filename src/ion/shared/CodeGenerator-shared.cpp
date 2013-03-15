@@ -334,11 +334,7 @@ CodeGeneratorShared::ensureOsiSpace()
     if (masm.currentOffset() - lastOsiPointOffset_ < Assembler::patchWrite_NearCallSize()) {
         int32 paddingSize = Assembler::patchWrite_NearCallSize();
         paddingSize -= masm.currentOffset() - lastOsiPointOffset_;
-#if defined (JS_CPU_MIPS)
-        for (int32 i = 0; i < paddingSize / 4; ++i)
-#else
         for (int32 i = 0; i < paddingSize; ++i)
-#endif
             masm.nop();
     }
     JS_ASSERT(masm.currentOffset() - lastOsiPointOffset_ >= Assembler::patchWrite_NearCallSize());
