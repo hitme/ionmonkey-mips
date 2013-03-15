@@ -536,16 +536,17 @@ Assembler::patchWrite_NearCall(CodeLocationLabel startLabel, CodeLocationLabel t
 
     uint32_t *start = (uint32_t*)startLabel.raw();
     uint32_t *to = (uint32_t*)target.raw();
-    JS_ASSERT((reinterpret_cast<intptr_t>(start)) >> 28 == (reinterpret_cast<intptr_t>(to)) >> 28);
-    JS_ASSERT((*start & 0xffffffc0) == 0x14000000);
-    JS_ASSERT(*(start + 1) == 0);
-    JS_ASSERT((*(start + 2) & 0xffe00000) == 0x3c000000);
-    JS_ASSERT((*(start + 3) & 0xfc000000) == 0x34000000);
-    JS_ASSERT(*(start + 4) == 0x03200008);
-    JS_ASSERT(*(start + 5) == 0);
-    JS_ASSERT(*(start + 6) == 0);
-    JS_ASSERT(*(start + 7) == 0);
-    JS_ASSERT(*(start + 8) == 0);
+    start -= 5;
+//    JS_ASSERT((reinterpret_cast<intptr_t>(start)) >> 28 == (reinterpret_cast<intptr_t>(to)) >> 28);
+//    JS_ASSERT((*start & 0xffffffc0) == 0x14000000);
+//    JS_ASSERT(*(start + 1) == 0);
+//    JS_ASSERT((*(start + 2) & 0xffe00000) == 0x3c000000);
+//    JS_ASSERT((*(start + 3) & 0xfc000000) == 0x34000000);
+//    JS_ASSERT(*(start + 4) == 0x03200008);
+//    JS_ASSERT(*(start + 5) == 0);
+//    JS_ASSERT(*(start + 6) == 0);
+//    JS_ASSERT(*(start + 7) == 0);
+//    JS_ASSERT(*(start + 8) == 0);
 
     *start = 0x3c190000 | hg;
     *(start + 1) = 0x37390000 | lw;

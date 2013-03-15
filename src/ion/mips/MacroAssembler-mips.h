@@ -82,17 +82,8 @@ class MacroAssemblerMIPS : public Assembler
             return base; // Silence GCC warning.
         }
     }
-    void moveValue(const Value &val, Register type, Register data) {
-        jsval_layout jv = JSVAL_TO_IMPL(val);
-        movl(Imm32(jv.s.tag), type);
-        if (val.isMarkable())
-            movl(ImmGCPtr(reinterpret_cast<gc::Cell *>(val.toGCThing())), data);
-        else
-            movl(Imm32(jv.s.payload.i32), data);
-    }
-    void moveValue(const Value &val, const ValueOperand &dest) {
-        moveValue(val, dest.typeReg(), dest.payloadReg());
-    }
+    void moveValue(const Value &val, Register type, Register data);
+    void moveValue(const Value &val, const ValueOperand &dest);
 
     /////////////////////////////////////////////////////////////////
     // X86/X64-common interface.
