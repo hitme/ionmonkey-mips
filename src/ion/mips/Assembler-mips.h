@@ -340,6 +340,7 @@ class Assembler
     typedef JSC::MacroAssemblerMIPS::Imm32 mImm32;
     typedef JSC::MacroAssemblerMIPS::ImmDouble mImmDouble;
     typedef JSC::MacroAssemblerMIPS::RegisterID mRegisterID;
+    typedef JSC::MacroAssemblerMIPS::FPRegisterID mFPRegisterID;
 
     typedef JSC::MIPSAssembler::JmpSrc JmpSrc;
     typedef JSC::MIPSAssembler::JmpDst JmpDst;
@@ -507,6 +508,13 @@ class Assembler
         return masm.currentOffset();
     }
 
+    void fastStoreDouble(const FloatRegister &src, Register lo, Register hi){
+        mcss.fastStoreDouble(mFPRegisterID(src.code()), mRegisterID(lo.code()), mRegisterID(hi.code()));
+    }
+    void fastLoadDouble(Register lo, Register hi, const FloatRegister &dest){
+        mcss.fastLoadDouble(mRegisterID(lo.code()), mRegisterID(hi.code()), mFPRegisterID(dest.code()));
+    }
+    
     void movl(const ImmGCPtr &ptr, const Register &dest) {
 //ok        masm.movl_i32r(ptr.value, dest.code());
         mcss.move(mTrustedImmPtr(reinterpret_cast<const void*>(ptr.value)), dest.code());
