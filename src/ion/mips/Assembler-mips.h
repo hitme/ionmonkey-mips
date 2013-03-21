@@ -154,8 +154,8 @@ static const Register cmpTempRegister  = t3;
 static const Register dataTemp2Register = t4;
 static const Register cmpTemp2Register  = t5;
 
-static const FloatRegister fpTempRegister = f30;
-static const FloatRegister fpTemp2Register = f31;
+static const FloatRegister fpTempRegister = f28;
+static const FloatRegister fpTemp2Register = f29;
 
 // For maximal awesomeness, 8 should be sufficent.
 // ldrd/strd (dual-register load/store) operate in a single cycle

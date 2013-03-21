@@ -559,8 +559,9 @@ Assembler::patchWrite_NearCall(CodeLocationLabel startLabel, CodeLocationLabel t
 uintptr_t 
 Assembler::getPointer(uint8 *instPtr) {
 //TBD
-    uintptr_t *ptr = ((uintptr_t *) instPtr) - 1;
-    return *ptr;
+    uintptr_t ptr = reinterpret_cast<uintptr_t>(JSC::MIPSAssembler::getPointer(instPtr));
+    //uintptr_t *ptr = ((uintptr_t *) instPtr) - 1;
+    return ptr;
 }
 uint32 
 Assembler::nopSize() {
