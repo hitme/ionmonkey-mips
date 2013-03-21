@@ -350,6 +350,10 @@ CodeGeneratorShared::markOsiPoint(LOsiPoint *ins, uint32 *callPointOffset)
     ensureOsiSpace();
 
     *callPointOffset = masm.currentOffset();
+#if defined(JS_CPU_MIPS)
+    for (int32 i = 0; i < 9; ++i)
+        masm.nop();
+#endif
     SnapshotOffset so = ins->snapshot()->snapshotOffset();
     return osiIndices_.append(OsiIndex(*callPointOffset, so));
 }
