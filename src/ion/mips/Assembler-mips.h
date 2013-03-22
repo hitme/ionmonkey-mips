@@ -369,10 +369,10 @@ class Assembler
         LessThanOrEqual = JSC::MacroAssemblerMIPS::LessThanOrEqual,
         Overflow = JSC::MacroAssemblerMIPS::Overflow,
         Signed = JSC::MacroAssemblerMIPS::Signed,
-        Zero = JSC::MacroAssemblerMIPS::Zero,
-        NonZero = JSC::MacroAssemblerMIPS::NonZero,
-        Parity,
-        NoParity
+        Zero = JSC::MacroAssemblerMIPS::Equal,
+        NonZero = JSC::MacroAssemblerMIPS::NotEqual,
+        Parity = JSC::MacroAssemblerMIPS::DoubleUnordered,
+        NoParity = JSC::MacroAssemblerMIPS::DoubleOrdered
     };
 
     // If this bit is set, the ucomisd operands have to be inverted.
@@ -386,20 +386,20 @@ class Assembler
     enum DoubleCondition {
         // These conditions will only evaluate to true if the comparison is ordered - i.e. neither operand is NaN.
         DoubleOrdered = NoParity,
-        DoubleEqual = Equal | DoubleConditionBitSpecial,
-        DoubleNotEqual = NotEqual,
-        DoubleGreaterThan = Above,
-        DoubleGreaterThanOrEqual = AboveOrEqual,
-        DoubleLessThan = Above | DoubleConditionBitInvert,
-        DoubleLessThanOrEqual = AboveOrEqual | DoubleConditionBitInvert,
+        DoubleEqual = JSC::MacroAssemblerMIPS::DoubleEqual,
+        DoubleNotEqual = JSC::MacroAssemblerMIPS::DoubleNotEqual,
+        DoubleGreaterThan = JSC::MacroAssemblerMIPS::DoubleGreaterThan,
+        DoubleGreaterThanOrEqual = JSC::MacroAssemblerMIPS::DoubleGreaterThanOrEqual,
+        DoubleLessThan = JSC::MacroAssemblerMIPS::DoubleLessThan,
+        DoubleLessThanOrEqual = JSC::MacroAssemblerMIPS::DoubleLessThanOrEqual,
         // If either operand is NaN, these conditions always evaluate to true.
         DoubleUnordered = Parity,
-        DoubleEqualOrUnordered = Equal,
-        DoubleNotEqualOrUnordered = NotEqual | DoubleConditionBitSpecial,
-        DoubleGreaterThanOrUnordered = Below | DoubleConditionBitInvert,
-        DoubleGreaterThanOrEqualOrUnordered = BelowOrEqual | DoubleConditionBitInvert,
-        DoubleLessThanOrUnordered = Below,
-        DoubleLessThanOrEqualOrUnordered = BelowOrEqual
+        DoubleEqualOrUnordered = JSC::MacroAssemblerMIPS::DoubleEqualOrUnordered,
+        DoubleNotEqualOrUnordered = JSC::MacroAssemblerMIPS::DoubleNotEqualOrUnordered,
+        DoubleGreaterThanOrUnordered = JSC::MacroAssemblerMIPS::DoubleGreaterThanOrUnordered,
+        DoubleGreaterThanOrEqualOrUnordered = JSC::MacroAssemblerMIPS::DoubleGreaterThanOrEqualOrUnordered,
+        DoubleLessThanOrUnordered = JSC::MacroAssemblerMIPS::DoubleLessThanOrUnordered,
+        DoubleLessThanOrEqualOrUnordered = JSC::MacroAssemblerMIPS::DoubleLessThanOrEqualOrUnordered 
     };
 
     static void staticAsserts() {

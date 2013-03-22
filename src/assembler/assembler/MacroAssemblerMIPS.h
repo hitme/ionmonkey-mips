@@ -82,6 +82,8 @@ public:
     };
 
     enum DoubleCondition {
+        DoubleUnordered,
+        DoubleOrdered,
         DoubleEqual,
         DoubleNotEqual,
         DoubleGreaterThan,
@@ -2748,12 +2750,20 @@ public:
 
     Jump branchDouble(DoubleCondition cond, FPRegisterID left, FPRegisterID right)
     {
+        if (cond == DoubleUnordered) {
+            m_assembler.cud(left, right);
+            return branchTrue();
+        }
+        if (cond == DoubleOrdered) {
+            m_assembler.cud(left, right);
+            return branchFalse();
+        }
         if (cond == DoubleEqual) {
             m_assembler.ceqd(left, right);
             return branchTrue();
         }
         if (cond == DoubleNotEqual) {
-            m_assembler.cueqd(left, right);
+            m_assembler.ceqd(left, right);
             return branchFalse(); // false
         }
         if (cond == DoubleGreaterThan) {

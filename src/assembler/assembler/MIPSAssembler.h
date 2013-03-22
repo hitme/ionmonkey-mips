@@ -679,6 +679,12 @@ public:
         emitInst(0x46200024 | (fd << OP_SH_FD) | (fs << OP_SH_FS));
     }
 
+    void cud(FPRegisterID fs, FPRegisterID ft)
+    {
+        emitInst(0x46200031 | (fs << OP_SH_FS) | (ft << OP_SH_FT));
+        copDelayNop();
+    }
+
     void ceqd(FPRegisterID fs, FPRegisterID ft)
     {
         emitInst(0x46200032 | (fs << OP_SH_FS) | (ft << OP_SH_FT));
