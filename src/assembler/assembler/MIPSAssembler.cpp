@@ -436,12 +436,25 @@ namespace JSC {
                 (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x03200008)));
             insn = insn - 6;
             linkWithOffset(insn, toPos);
-        }else{
+        }else if 
+            ((((*(insn - 2) & 0xfc000000) == 0x0c000000) && !(*(insn - 3)) && !(*(insn - 4))) || 
+            (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x0320f809)))
+        {
             insn += 3;
             ASSERT((((*(insn - 2) & 0xfc000000) == 0x0c000000) && !(*(insn - 3)) && !(*(insn - 4))) || 
             (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x0320f809)));
             
             linkCallInternal(insn, toPos);
+        } else{
+            insn -= 1;
+            ASSERT((!(*(insn + 1)) && !(*(insn))) &&
+                (((*(insn + 2)) != 0x0320f809) && ((*(insn + 2) & 0xfc1fffff) == 0x0000f809)));
+            /* lui */
+            *insn = 0x3c000000 | (MIPSRegisters::t9 << OP_SH_RT) | ((value >> 16) & 0xffff);
+            /* ori */
+            *(insn + 1) = 0x34000000 | (MIPSRegisters::t9 << OP_SH_RT) | (MIPSRegisters::t9 << OP_SH_RS) | (value & 0xffff);
+            /* jalr t9 */
+            *(insn + 2) = 0x0000f809 | (MIPSRegisters::t9 << OP_SH_RS);
         }
     }
 
