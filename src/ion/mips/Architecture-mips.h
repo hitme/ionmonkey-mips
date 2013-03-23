@@ -152,7 +152,7 @@ class FloatRegisters
     static const Code Invalid = JSC::MIPSRegisters::invalid_freg;    
 
     static const uint32 Total = 31;//strictly SMALLER than 32
-    static const uint32 Allocatable = 25;
+    static const uint32 Allocatable = 21;
 
     static const uint32 AllMask = (1 << Total) - 1;
 
@@ -163,11 +163,15 @@ class FloatRegisters
 
     // d0 is the ARM scratch float register.
     static const uint32 NonAllocatableMask = 
+        (1 << JSC::MIPSRegisters::f0) |
         (1 << JSC::MIPSRegisters::f1) |
+        (1 << JSC::MIPSRegisters::f2) |
+        (1 << JSC::MIPSRegisters::f3) |
         (1 << JSC::MIPSRegisters::f16)|//by JSC
+        (1 << JSC::MIPSRegisters::f17)|//by JSC
         (1 << JSC::MIPSRegisters::f28)|//fpTemp
-        (1 << JSC::MIPSRegisters::f29)|//fpTemp2
-        (1 << JSC::MIPSRegisters::f30)|
+        (1 << JSC::MIPSRegisters::f29)|
+        (1 << JSC::MIPSRegisters::f30)|//fpTemp2
         (1 << JSC::MIPSRegisters::f31);//JS_ASSERT((uint32)code_ < FloatRegisters::Total); in Registers.h
 
     // Registers that can be allocated without being saved, generally.

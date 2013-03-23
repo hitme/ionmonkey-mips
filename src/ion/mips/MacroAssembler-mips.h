@@ -898,10 +898,10 @@ class MacroAssemblerMIPS : public Assembler
     void convertInt32ToDouble(const Register &src, const FloatRegister &dest) {
         cvtsi2sd(Operand(src), dest);
     }
-    Condition testDoubleTruthy(bool truthy, const FloatRegister &reg) {
+    DoubleCondition testDoubleTruthy(bool truthy, const FloatRegister &reg) {
         xorpd(ScratchFloatReg, ScratchFloatReg);
         ucomisd(ScratchFloatReg, reg);
-        return truthy ? NonZero : Zero;
+        return truthy ? Assembler::DoubleNotEqual : Assembler::DoubleEqual;
     }
     void branchTruncateDouble(const FloatRegister &src, const Register &dest, Label *fail) {
         JS_STATIC_ASSERT(INT_MIN == int(0x80000000));
@@ -964,7 +964,10 @@ class MacroAssemblerMIPS : public Assembler
         movsd(src, Operand(dest));
     }
     void zeroDouble(FloatRegister reg) {
-        xorpd(reg, reg);
+        zerod(reg);
+    }
+    void negDouble(FloatRegister src, FloatRegister dest) {
+        negd(src, dest);
     }
     void addDouble(FloatRegister src, FloatRegister dest) {
         addsd(src, dest);

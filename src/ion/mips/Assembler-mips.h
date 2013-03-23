@@ -143,7 +143,7 @@ static const Register JSReturnReg_Type = t7;
 static const Register JSReturnReg_Data = t8;
 static const Register ReturnReg = v0;
 static const FloatRegister ReturnFloatReg = { JSC::MIPSRegisters::f0 };
-static const FloatRegister ScratchFloatReg = { JSC::MIPSRegisters::f1 };
+static const FloatRegister ScratchFloatReg = { JSC::MIPSRegisters::f2 };
 
 static const Register ScratchRegister = t9;
 
@@ -155,7 +155,7 @@ static const Register dataTemp2Register = t4;
 static const Register cmpTemp2Register  = t5;
 
 static const FloatRegister fpTempRegister = f28;
-static const FloatRegister fpTemp2Register = f29;
+static const FloatRegister fpTemp2Register = f30;
 
 // For maximal awesomeness, 8 should be sufficent.
 // ldrd/strd (dual-register load/store) operate in a single cycle
@@ -1755,6 +1755,9 @@ class Assembler
             JS_NOT_REACHED("unexpected operand kind");
         }
     }
+    void zerod(const FloatRegister &src);
+    void absd(const FloatRegister &src);
+    void negd(const FloatRegister &src, const FloatRegister &dest);
 //ok xorpd mainly used to clear fpScratchRegister, on mips, use zeroDouble instead
     void xorpd(const FloatRegister &src, const FloatRegister &dest);
 //ok orpd only one use case

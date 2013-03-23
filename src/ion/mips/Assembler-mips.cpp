@@ -211,7 +211,7 @@ Assembler::patchWrite_Imm32(CodeLocationLabel dataLabel, Imm32 toWrite) {
 
 void
 Assembler::fstp(const Operand &src) {//callWithABI
-    ASSERT(0);
+    ASSERT(0);//ok
      switch (src.kind()) {
        case Operand::REG_DISP:
 //             masm.fstp_m(src.disp(), src.base());
@@ -223,35 +223,38 @@ Assembler::fstp(const Operand &src) {//callWithABI
 
 void
 Assembler::andpd(const FloatRegister &src, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(0);//ok
 	//      masm.andpd_rr(src.code(), dest.code());
 }
 
 void
 Assembler::orpd(const FloatRegister &src, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(0);//ok
 	//      masm.orpd_rr(src.code(), dest.code());
 }
 void
 Assembler::xorpd(const FloatRegister &src, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(src.code() == dest.code());
+    zerod(src);//ok
 //        masm.xorpd_rr(src.code(), dest.code());
 }
 void
 Assembler::pcmpeqw(const FloatRegister &lhs, const FloatRegister &rhs) {
-    ASSERT(0);
+    ASSERT(0);//ok
     //only usecase MacroAssemblerMIPS:maybeInlineDouble CodeGeneratorMIPS:visitNegD
 //        masm.pcmpeqw_rr(rhs.code(), lhs.code());
 }    
 void
 Assembler::ptest(const FloatRegister &lhs, const FloatRegister &rhs) {
-    ASSERT(0);
+    ASSERT(0);//ok
 //        JS_ASSERT(HasSSE41());
 //        masm.ptest_rr(rhs.code(), lhs.code());
 }
 void
 Assembler::movmskpd(const FloatRegister &src, const Register &dest) {
-    ASSERT(0);
+    //ASSERT(0);//ok extract sign bit from src to dest
+    masm.dmfc1(mRegisterID(src.code()), mFPRegisterID(dest.code()));
+    masm.dsrl32(mRegisterID(dest.code()), mRegisterID(dest.code()), 31);
 //        masm.movmskpd_rr(src.code(), dest.code());
 }
 
@@ -299,13 +302,13 @@ Assembler::psrldq(Imm32 shift, const FloatRegister &dest) {
 }
 void
 Assembler::psllq(Imm32 shift, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(0);//ok
     //only usecase MacroAssemblerMIPS:maybeInlineDouble CodeGeneratorMIPS:visitNegD
 //        masm.psllq_rr(dest.code(), shift.value);
 }
 void
 Assembler::psrlq(Imm32 shift, const FloatRegister &dest) {
-    ASSERT(0);
+    ASSERT(0);//ok
     //only usecase maybeInlineDouble
 //        masm.psrlq_rr(dest.code(), shift.value);
 }
@@ -567,4 +570,16 @@ Assembler::getPointer(uint8 *instPtr) {
 uint32 
 Assembler::nopSize() {
     return 4;
+}
+void 
+Assembler::absd(const FloatRegister &src) {
+    mcss.absDouble(mFPRegisterID(src.code()), mFPRegisterID(src.code()));
+}
+void 
+Assembler::zerod(const FloatRegister &src) {
+    mcss.zeroDouble(mFPRegisterID(src.code()));
+}
+void 
+Assembler::negd(const FloatRegister &src, const FloatRegister &dest) {
+    mcss.negDouble(mFPRegisterID(src.code()), mFPRegisterID(dest.code()));
 }

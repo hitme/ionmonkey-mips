@@ -143,7 +143,7 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
 
 //    addl(Imm32(16), StackPointer);
     freeStack(stackAdjust);
-    if (result == DOUBLE) {
+    if (0 && (result == DOUBLE)) {
         reserveStack(sizeof(double));
         fstp(Operand(sp, 0));
         movsd(Operand(sp, 0), ReturnFloatReg);

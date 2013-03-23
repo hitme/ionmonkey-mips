@@ -114,6 +114,7 @@ MacroAssembler::branchTestValueTruthy(const ValueOperand &value, Label *ifTrue, 
     Register tag = splitTagForTest(value);
     Label ifFalse;
     Assembler::Condition cond;
+    Assembler::DoubleCondition dCond;
 
     // Eventually we will want some sort of type filter here. For now, just
     // emit all easy cases. For speed we use the cached tag for all comparison,
@@ -147,8 +148,8 @@ MacroAssembler::branchTestValueTruthy(const ValueOperand &value, Label *ifTrue, 
 
     // If we reach here the value is a double.
     unboxDouble(value, fr);
-    cond = testDoubleTruthy(false, fr);
-    j(cond, &ifFalse);
+    dCond = testDoubleTruthy(false, fr);
+    j(dCond, &ifFalse);
     jump(ifTrue);
     bind(&ifFalse);
 }

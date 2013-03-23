@@ -638,6 +638,18 @@ public:
         copDelayNop();
     }
 
+    void dsrl32(RegisterID rt, RegisterID rd, int saminus32)
+    {
+        emitInst(0x0000003d | (rd << OP_SH_RD) | (rt << OP_SH_RT) | (saminus32 << OP_SH_SHAMT));
+        copDelayNop();
+    }
+
+    void dmfc1(RegisterID rt, FPRegisterID fs)
+    {
+        emitInst(0x44200000 | (fs << OP_SH_FS) | (rt << OP_SH_RT));
+        copDelayNop();
+    }
+
     void mfc1(RegisterID rt, FPRegisterID fs)
     {
         emitInst(0x44000000 | (fs << OP_SH_FS) | (rt << OP_SH_RT));

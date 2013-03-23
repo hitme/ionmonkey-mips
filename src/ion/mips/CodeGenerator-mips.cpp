@@ -456,8 +456,11 @@ CodeGeneratorMIPS::visitMinMaxD(LMinMaxD *ins)
     // So now both operands are either -0 or 0.
     if (ins->mir()->isMax())
         masm.addsd(second, first); // -0 + -0 = -0 and -0 + 0 = 0.
-    else
-        masm.orpd(second, first); // This just ors the sign bit.
+    else {
+    //    masm.orpd(second, first); // This just ors the sign bit.
+        masm.zerod(first);
+        masm.negd(first, first);
+    }
     masm.jmp(&done);
 
     masm.bind(&nan);
@@ -479,10 +482,11 @@ CodeGeneratorMIPS::visitNegD(LNegD *ins)
     JS_ASSERT(input == ToFloatRegister(ins->output()));
 
     // From MacroAssemblerX86Shared::maybeInlineDouble
-    masm.pcmpeqw(ScratchFloatReg, ScratchFloatReg);
-    masm.psllq(Imm32(63), ScratchFloatReg);
-
-    masm.xorpd(ScratchFloatReg, input); // s ^ 0x80000000000000
+//    masm.pcmpeqw(ScratchFloatReg, ScratchFloatReg);
+//    masm.psllq(Imm32(63), ScratchFloatReg);
+//
+//    masm.xorpd(ScratchFloatReg, input); // s ^ 0x80000000000000
+    masm.negd(input, input);
     return true;
 }
 
@@ -491,9 +495,10 @@ CodeGeneratorMIPS::visitAbsD(LAbsD *ins)
 {
     FloatRegister input = ToFloatRegister(ins->input());
     JS_ASSERT(input == ToFloatRegister(ins->output()));
-    masm.xorpd(ScratchFloatReg, ScratchFloatReg);
-    masm.subsd(input, ScratchFloatReg); // negate the sign bit.
-    masm.andpd(ScratchFloatReg, input); // s & ~s
+//    masm.xorpd(ScratchFloatReg, ScratchFloatReg);
+//    masm.subsd(input, ScratchFloatReg); // negate the sign bit.
+//    masm.andpd(ScratchFloatReg, input); // s & ~s
+    masm.absd(input);
     return true;
 }
 
@@ -1235,7 +1240,7 @@ CodeGeneratorMIPS::emitDoubleToInt32(const FloatRegister &src, const Register &d
         masm.j(Assembler::NonZero, &notZero);
 
 //        if (Assembler::HasSSE41()) {
-        if (true) {
+        if (false) {
             masm.ptest(src, src);
             masm.j(Assembler::NonZero, fail);
         } else {
@@ -1509,7 +1514,7 @@ CodeGeneratorMIPS::visitDouble(LDouble *ins)
     } dpun;
     dpun.d = v.toDouble();
 
-    if (masm.maybeInlineDouble(dpun.u, ToFloatRegister(out)))
+    if (0 && masm.maybeInlineDouble(dpun.u, ToFloatRegister(out)))
         return true;
 
     DeferredDouble *d = new DeferredDouble(cindex->index());
