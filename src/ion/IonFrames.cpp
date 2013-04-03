@@ -960,8 +960,14 @@ MachineState::FromBailout(uintptr_t regs[Registers::Total],
 
     for (unsigned i = 0; i < Registers::Total; i++)
         machine.setRegisterLocation(Register::FromCode(i), &regs[i]);
+
+#if !defined(JS_CPU_MIPS)
     for (unsigned i = 0; i < FloatRegisters::Total; i++)
         machine.setRegisterLocation(FloatRegister::FromCode(i), &fpregs[i]);
+#else
+    for (unsigned i = 0; i < FloatRegisters::Total; i+=2)
+        machine.setRegisterLocation(FloatRegister::FromCode(i), &fpregs[i/2]);
+#endif
 
     return machine;
 }

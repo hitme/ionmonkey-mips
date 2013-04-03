@@ -152,10 +152,10 @@ class FloatRegisters
 
     static const Code Invalid = JSC::MIPSRegisters::invalid_freg;    
 
-    static const uint32 Total = 16;//strictly SMALLER than 32
+    static const uint32 Total = 32;//strictly SMALLER than 32
     static const uint32 Allocatable = 10;
 
-    static const uint32 AllMask = (1 << (Total*2)) - 1;
+    static const uint32 AllMask = 0xffffffff;
 
     static const uint32 VolatileMask =
         (1 << JSC::MIPSRegisters::f4) |

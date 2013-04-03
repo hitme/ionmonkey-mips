@@ -103,7 +103,12 @@ struct FloatRegister {
 class MachineState
 {
     FixedArityList<uintptr_t *, Registers::Total> regs_;
+#if !defined(JS_CPU_MIPS)
     FixedArityList<double *, FloatRegisters::Total> fpregs_;
+#else
+    FixedArityList<double *, FloatRegisters::Total/2> fpregs_;
+        //not hold for mips fp register 
+#endif
 
   public:
     static MachineState FromBailout(uintptr_t regs[Registers::Total],
