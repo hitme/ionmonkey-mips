@@ -59,10 +59,11 @@ public:
     static const Code StackPointer = JSC::MIPSRegisters::sp; 
     static const Code Invalid = JSC::MIPSRegisters::invalid_reg;
 
-    static const uint32 Total = 30; //TBD:must be smaller than MIN_REG_FIELD_ESC(30), defined in Snapshots.cpp
+    static const uint32 Total = 32; //TBD:must be smaller than MIN_REG_FIELD_ESC(30), defined in Snapshots.cpp
     static const uint32 Allocatable = 11; 
 
-    static const uint32 AllMask = (1 << Total) - 1;
+    //static const uint32 AllMask = (1 << Total) - 1;
+    static const uint32 AllMask = 0xffffffff;
     //static const uint32 ArgRegMask = 0x1f;
     static const uint32 ArgRegMask = 0;
 
@@ -151,28 +152,52 @@ class FloatRegisters
 
     static const Code Invalid = JSC::MIPSRegisters::invalid_freg;    
 
-    static const uint32 Total = 31;//strictly SMALLER than 32
-    static const uint32 Allocatable = 21;
+    static const uint32 Total = 16;//strictly SMALLER than 32
+    static const uint32 Allocatable = 10;
 
-    static const uint32 AllMask = (1 << Total) - 1;
+    static const uint32 AllMask = (1 << (Total*2)) - 1;
 
-    static const uint32 VolatileMask = AllMask;
-    static const uint32 NonVolatileMask = 0;
+    static const uint32 VolatileMask =
+        (1 << JSC::MIPSRegisters::f4) |
+        (1 << JSC::MIPSRegisters::f6) |
+        (1 << JSC::MIPSRegisters::f8) |
+        (1 << JSC::MIPSRegisters::f10) |
+        (1 << JSC::MIPSRegisters::f16) |
+        (1 << JSC::MIPSRegisters::f18); 
+
+    static const uint32 NonVolatileMask =
+        (1 << JSC::MIPSRegisters::f20) |
+        (1 << JSC::MIPSRegisters::f22) |
+        (1 << JSC::MIPSRegisters::f24) |
+        (1 << JSC::MIPSRegisters::f26);
 
     static const uint32 WrapperMask = VolatileMask;
 
     // d0 is the ARM scratch float register.
     static const uint32 NonAllocatableMask = 
-        (1 << JSC::MIPSRegisters::f0) |
         (1 << JSC::MIPSRegisters::f1) |
-        (1 << JSC::MIPSRegisters::f2) |
         (1 << JSC::MIPSRegisters::f3) |
-        (1 << JSC::MIPSRegisters::f16)|//by JSC
-        (1 << JSC::MIPSRegisters::f17)|//by JSC
+        (1 << JSC::MIPSRegisters::f5) |
+        (1 << JSC::MIPSRegisters::f7) |
+        (1 << JSC::MIPSRegisters::f9) |
+        (1 << JSC::MIPSRegisters::f11) |
+        (1 << JSC::MIPSRegisters::f13) |
+        (1 << JSC::MIPSRegisters::f15) |
+        (1 << JSC::MIPSRegisters::f17) |
+        (1 << JSC::MIPSRegisters::f19) |
+        (1 << JSC::MIPSRegisters::f21) |
+        (1 << JSC::MIPSRegisters::f23) |
+        (1 << JSC::MIPSRegisters::f25) |
+        (1 << JSC::MIPSRegisters::f27) |
+        (1 << JSC::MIPSRegisters::f29) |
+        (1 << JSC::MIPSRegisters::f31) |
+
+        (1 << JSC::MIPSRegisters::f0) |
+        (1 << JSC::MIPSRegisters::f2) |
+        (1 << JSC::MIPSRegisters::f12)|
+        (1 << JSC::MIPSRegisters::f14)|//by JSC
         (1 << JSC::MIPSRegisters::f28)|//fpTemp
-        (1 << JSC::MIPSRegisters::f29)|
-        (1 << JSC::MIPSRegisters::f30)|//fpTemp2
-        (1 << JSC::MIPSRegisters::f31);//JS_ASSERT((uint32)code_ < FloatRegisters::Total); in Registers.h
+        (1 << JSC::MIPSRegisters::f30);//fpTemp2
 
     // Registers that can be allocated without being saved, generally.
     static const uint32 TempMask = VolatileMask & ~NonAllocatableMask;

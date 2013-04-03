@@ -255,14 +255,22 @@ class LUse : public LAllocation
         set(FIXED, reg.code(), usedAtStart);
     }
     LUse(FloatRegister reg, bool usedAtStart = false) {
+#if !defined(JS_CPU_MIPS)
         set(FIXED, reg.code(), usedAtStart);
+#else
+        set(FIXED, FloatRegister::Code(reg.code()/2), usedAtStart);
+#endif
     }
     LUse(Register reg, uint32 virtualRegister) {
         set(FIXED, reg.code(), false);
         setVirtualRegister(virtualRegister);
     }
     LUse(FloatRegister reg, uint32 virtualRegister) {
+#if !defined(JS_CPU_MIPS)
         set(FIXED, reg.code(), false);
+#else
+        set(FIXED, FloatRegister::Code(reg.code()/2), false);
+#endif
         setVirtualRegister(virtualRegister);
     }
 
@@ -310,7 +318,11 @@ class LFloatReg : public LAllocation
 {
   public:
     explicit LFloatReg(FloatRegister reg)
+#if !defined(JS_CPU_MIPS)
       : LAllocation(FPU, reg.code())
+#else
+      : LAllocation(FPU, FloatRegister::Code(reg.code()/2))
+#endif
     { }
 
     FloatRegister reg() const {

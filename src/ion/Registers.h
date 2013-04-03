@@ -41,7 +41,7 @@ struct Register {
         return r;
     }
     Code code() const {
-#if !defined(JS_CPU_MIPS)
+#if 1 || defined(JS_CPU_MIPS)
         JS_ASSERT((uint32)code_ < Registers::Total);
 #endif
         return code_;
@@ -67,12 +67,21 @@ struct FloatRegister {
     Code code_;
 
     static FloatRegister FromCode(uint32 i) {
+#if !defined(JS_CPU_MIPS)
         JS_ASSERT(i < FloatRegisters::Total);
         FloatRegister r = { (FloatRegisters::Code)i };
+#else
+        JS_ASSERT(i < FloatRegisters::Total);
+        FloatRegister r = { (FloatRegisters::Code)(i*2) };
+#endif
         return r;
     }
     Code code() const {
+#if !defined(JS_CPU_MIPS)
         JS_ASSERT((uint32)code_ < FloatRegisters::Total);
+#else
+        JS_ASSERT((uint32)code_/2 < FloatRegisters::Total);
+#endif
         return code_;
     }
     const char *name() const {
@@ -103,20 +112,32 @@ class MachineState
         regs_[reg.code()] = up;
     }
     void setRegisterLocation(FloatRegister reg, double *dp) {
+#if !defined(JS_CPU_MIPS)
         fpregs_[reg.code()] = dp;
+#else
+        fpregs_[reg.code()/2] = dp;
+#endif
     }
 
     bool has(Register reg) const {
         return regs_[reg.code()] != NULL;
     }
     bool has(FloatRegister reg) const {
+#if !defined(JS_CPU_MIPS)
         return fpregs_[reg.code()] != NULL;
+#else
+        return fpregs_[reg.code()/2] != NULL;
+#endif
     }
     uintptr_t read(Register reg) const {
         return *regs_[reg.code()];
     }
     double read(FloatRegister reg) const {
+#if !defined(JS_CPU_MIPS)
         return *fpregs_[reg.code()];
+#else
+        return *fpregs_[reg.code()/2];
+#endif
     }
 };
 

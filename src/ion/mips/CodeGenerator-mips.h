@@ -178,10 +178,13 @@ class CodeGeneratorMIPS : public CodeGeneratorShared
 class OutOfLineBailout : public OutOfLineCodeBase<CodeGeneratorMIPS>
 {
     LSnapshot *snapshot_;
+    uint32 frameSize_;
 
   public:
-    OutOfLineBailout(LSnapshot *snapshot)
-      : snapshot_(snapshot)
+    //OutOfLineBailout(LSnapshot *snapshot)
+    OutOfLineBailout(LSnapshot *snapshot, uint32 frameSize)
+      : snapshot_(snapshot),
+        frameSize_(frameSize)
     { }
 
     bool accept(CodeGeneratorMIPS *codegen);

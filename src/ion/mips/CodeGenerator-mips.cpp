@@ -336,9 +336,11 @@ class BailoutJump {
   public:
     BailoutJump(Assembler::Condition cond) : cond_(cond)
     { }
+#if 1 || defined(JS_CPU_X86)
     void operator()(MacroAssembler &masm, uint8 *code) const {
-        masm.j(cond_, code, Relocation::HARDCODED);
+        masm.j(cond_, code, Relocation::IONCODE);
     }
+#endif
     void operator()(MacroAssembler &masm, Label *label) const {
         masm.j(cond_, label);
     }
@@ -350,9 +352,11 @@ class BailoutLabel {
   public:
     BailoutLabel(Label *label) : label_(label)
     { }
+#if 1 || defined(JS_CPU_X86)
     void operator()(MacroAssembler &masm, uint8 *code) const {
-        masm.retarget(label_, code, Relocation::HARDCODED);
+        masm.retarget(label_, code, Relocation::IONCODE);
     }
+#endif
     void operator()(MacroAssembler &masm, Label *label) const {
         masm.retarget(label_, label);
     }
@@ -370,6 +374,7 @@ CodeGeneratorMIPS::bailout(const T &binder, LSnapshot *snapshot)
     JS_ASSERT_IF(frameClass_ != FrameSizeClass::None() && deoptTable_,
                  frameClass_.frameSize() == masm.framePushed());
 
+#if 1 || defined(JS_CPU_X86)
     // On x64, bailout tables are pointless, because 16 extra bytes are
     // reserved per external jump, whereas it takes only 10 bytes to encode a
     // a non-table based bailout.
@@ -377,11 +382,13 @@ CodeGeneratorMIPS::bailout(const T &binder, LSnapshot *snapshot)
         binder(masm, deoptTable_->raw() + snapshot->bailoutId() * BAILOUT_TABLE_ENTRY_SIZE);
         return true;
     }
+#endif
 
     // We could not use a jump table, either because all bailout IDs were
     // reserved, or a jump table is not optimal for this frame size or
     // platform. Whatever, we will generate a lazy bailout.
-    OutOfLineBailout *ool = new OutOfLineBailout(snapshot);
+    //OutOfLineBailout *ool = new OutOfLineBailout(snapshot);
+    OutOfLineBailout *ool = new OutOfLineBailout(snapshot, masm.framePushed());
     if (!addOutOfLineCode(ool))
         return false;
 
@@ -1371,7 +1378,7 @@ CodeGeneratorMIPS::generateInvalidateEpilogue()
 //x86
 using mozilla::DebugOnly;
 
-static const uint32 FrameSizes[] = { 128, 256, 512, 1024 };
+static const uint32 FrameSizes[] = { 128, 256, 512, 1024, 2048, 4096, 8192 };
 
 FrameSizeClass
 FrameSizeClass::FromDepth(uint32 frameDepth)
