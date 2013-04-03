@@ -173,11 +173,7 @@ class SnapshotReader
         }
         FloatRegister floatReg() const {
             JS_ASSERT(mode() == DOUBLE_REG);
-#if !defined(JS_CPU_MIPS)
             return FloatRegister::FromCode(fpu_);
-#else
-            return FloatRegister::FromCode(fpu_/2);
-#endif
         }
         int32 stackSlot() const {
             JS_ASSERT(mode() == TYPED_STACK);

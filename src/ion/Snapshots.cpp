@@ -206,12 +206,7 @@ SnapshotReader::readSlot()
     switch (type) {
       case JSVAL_TYPE_DOUBLE:
         if (code < MIN_REG_FIELD_ESC)
-#if defined(JS_CPU_MIP)
             return Slot(FloatRegister::FromCode(code));
-#else
-            return Slot(FloatRegister::FromCode(code/2));
-#endif
-
         JS_ASSERT(code == ESC_REG_FIELD_INDEX);
         return Slot(TYPED_STACK, type, Location::From(reader_.readSigned()));
 

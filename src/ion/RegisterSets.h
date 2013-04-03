@@ -33,16 +33,15 @@ struct AnyRegister {
         isFloat_ = false;
     }
     explicit AnyRegister(FloatRegister fpu) {
-#if 1 || !defined(JS_CPU_MIPS)
         fpu_ = fpu.code();
-#else
-        fpu_ = FloatRegisters::Code(fpu.code()/2);
-#endif
         isFloat_ = true;
     }
     static AnyRegister FromCode(uint32 i) {
 #if !defined(JS_CPU_MIPS)
         JS_ASSERT(i < Total);
+#else
+        JS_ASSERT(i < Total);
+#endif
         AnyRegister r;
         if (i < Registers::Total) {
             r.gpr_ = Register::Code(i);
@@ -51,18 +50,6 @@ struct AnyRegister {
             r.fpu_ = FloatRegister::Code(i - Registers::Total);
             r.isFloat_ = true;
         }
-#else
-        //JS_ASSERT((i < Registers::Total)||((i - Registers::Total)/2 < FloatRegister::Total));
-        JS_ASSERT(i < Total);
-        AnyRegister r;
-        if (i < Registers::Total) {
-            r.gpr_ = Register::Code(i);
-            r.isFloat_ = false;
-        } else {
-            r.fpu_ = FloatRegister::Code((i - Registers::Total)*2);
-            r.isFloat_ = true;
-        }
-#endif
         return r;
     }
     bool isFloat() const {
@@ -74,11 +61,7 @@ struct AnyRegister {
     }
     FloatRegister fpu() const {
         JS_ASSERT(isFloat());
-#if !defined(JS_MIPS_CPU)
         return FloatRegister::FromCode(fpu_);
-#else
-        return FloatRegister::FromCode(fpu_*2);
-#endif
     }
     bool operator ==(const AnyRegister &other) const {
         return isFloat()
@@ -91,15 +74,9 @@ struct AnyRegister {
                : (other.isFloat() || gpr_ != other.gpr_);
     }
     const char *name() const {
-#if !defined(JS_MIPS_CPU)
         return isFloat()
                ? FloatRegister::FromCode(fpu_).name()
                : Register::FromCode(gpr_).name();
-#else
-        return isFloat()
-               ? FloatRegister::FromCode(fpu_*2).name()
-               : Register::FromCode(gpr_).name();
-#endif
     }
     const Code code() const {
         return isFloat()
@@ -369,10 +346,6 @@ class TypedRegisterSet
         JS_ASSERT(!empty());
         int ireg;
         JS_FLOOR_LOG2(ireg, bits_);
-#if defined(JS_CPU_MIPS)
-        if(T::Codes::Total == 16)    
-            ireg /= 2;
-#endif
         return T::FromCode(ireg);
     }
     T takeAny() {

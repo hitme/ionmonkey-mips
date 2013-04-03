@@ -224,7 +224,7 @@ IonRuntime::generateInvalidator(JSContext *cx)
         masm.movl(Register::FromCode(i), Operand(sp, i * sizeof(void *)));
 
     masm.reserveStack(FloatRegisters::Total * sizeof(double));
-    for (uint32 i = 0; i < FloatRegisters::Total; i++)
+    for (uint32 i = 0; i < FloatRegisters::Total * 2; i += 2)
         masm.movsd(FloatRegister::FromCode(i), Operand(sp, i * sizeof(double)));
 
     masm.movl(sp, s1); // Argument to ion::InvalidationBailout.
@@ -358,7 +358,7 @@ GenerateBailoutThunk(JSContext *cx, MacroAssembler &masm, uint32 frameClass)
 
     // Push xmm registers, such that we can access them from [base + code].
     masm.reserveStack(FloatRegisters::Total * sizeof(double));
-    for (uint32 i = 0; i < FloatRegisters::Total; i++)
+    for (uint32 i = 0; i < FloatRegisters::Total * 2; i += 2)
         masm.movsd(FloatRegister::FromCode(i), Operand(sp, i * sizeof(double)));
 
     // Push the bailout table number.

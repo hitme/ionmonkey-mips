@@ -41,8 +41,10 @@ struct Register {
         return r;
     }
     Code code() const {
-#if 1 || defined(JS_CPU_MIPS)
+#if !defined(JS_CPU_MIPS)
         JS_ASSERT((uint32)code_ < Registers::Total);
+#else
+        //not hold for mips fp register 
 #endif
         return code_;
     }
@@ -69,18 +71,17 @@ struct FloatRegister {
     static FloatRegister FromCode(uint32 i) {
 #if !defined(JS_CPU_MIPS)
         JS_ASSERT(i < FloatRegisters::Total);
-        FloatRegister r = { (FloatRegisters::Code)i };
 #else
-        JS_ASSERT(i < FloatRegisters::Total);
-        FloatRegister r = { (FloatRegisters::Code)(i*2) };
+        //not hold for mips fp register 
 #endif
+        FloatRegister r = { (FloatRegisters::Code)i };
         return r;
     }
     Code code() const {
 #if !defined(JS_CPU_MIPS)
         JS_ASSERT((uint32)code_ < FloatRegisters::Total);
 #else
-        JS_ASSERT((uint32)code_/2 < FloatRegisters::Total);
+        //not hold for mips fp register 
 #endif
         return code_;
     }
@@ -115,7 +116,8 @@ class MachineState
 #if !defined(JS_CPU_MIPS)
         fpregs_[reg.code()] = dp;
 #else
-        fpregs_[reg.code()/2] = dp;
+        fpregs_[reg.code() / 2] = dp;
+        //not hold for mips fp register 
 #endif
     }
 
@@ -126,7 +128,8 @@ class MachineState
 #if !defined(JS_CPU_MIPS)
         return fpregs_[reg.code()] != NULL;
 #else
-        return fpregs_[reg.code()/2] != NULL;
+        return fpregs_[reg.code() / 2] != NULL;
+        //not hold for mips fp register 
 #endif
     }
     uintptr_t read(Register reg) const {
@@ -136,7 +139,8 @@ class MachineState
 #if !defined(JS_CPU_MIPS)
         return *fpregs_[reg.code()];
 #else
-        return *fpregs_[reg.code()/2];
+        return *fpregs_[reg.code() / 2];
+        //not hold for mips fp register 
 #endif
     }
 };
