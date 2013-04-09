@@ -95,21 +95,18 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
     JS_ASSERT(inCall_);
     JS_ASSERT(args_ == passedArgs_);
 
-    uint32 stackAdjust;
+    uint32 stackAdjust = ((passedArgs_ > 4) ? passedArgs_ : 4) * STACK_SLOT_SIZE;
     if (dynamicAlignment_) {
 #if 0
         stackAdjust = stackForCall_
                     + ComputeByteAlignment(stackForCall_,
                                            StackAlignment);
 #else
-        stackAdjust = stackForCall_
-                    + ComputeByteAlignment(stackForCall_ + STACK_SLOT_SIZE,
-                                           StackAlignment);
+        stackAdjust += ComputeByteAlignment(stackAdjust + STACK_SLOT_SIZE, StackAlignment);
 #endif
     } else {
-        stackAdjust = stackForCall_
-                    + ComputeByteAlignment(stackForCall_ + framePushed_,
-                                           StackAlignment);
+        stackAdjust +=
+            ComputeByteAlignment(framePushed_ + stackAdjust, StackAlignment);
     }
 
     reserveStack(stackAdjust);
@@ -143,7 +140,7 @@ MacroAssemblerMIPS::callWithABI(void *fun, Result result)
 
 //    addl(Imm32(16), StackPointer);
     freeStack(stackAdjust);
-    if (0 && (result == DOUBLE)) {
+    if (result == DOUBLE) {
         reserveStack(sizeof(double));
         fstp(Operand(sp, 0));
         movsd(Operand(sp, 0), ReturnFloatReg);

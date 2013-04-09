@@ -422,11 +422,11 @@ Assembler::call(Label *label) {
     if (label->bound()) {
 //ok            masm.linkJump(mcss.call(), JmpDst(label->offset()));
 //ok    masm.linkJump(mcss.call().m_jmp, JmpDst(label->offset()));
-    masm.linkJump(callWithPush(), JmpDst(label->offset()));
+    masm.linkJump(mcss.call().m_jmp, JmpDst(label->offset()));
 } else {
 //ok            JmpSrc j = mcss.call();
 //ok        JmpSrc j = mcss.call().m_jmp;
-        JmpSrc j = callWithPush();
+        JmpSrc j = mcss.call().m_jmp;
         JmpSrc prev = JmpSrc(label->use(j.offset()));
         masm.setNextJump(j, prev);
     }

@@ -241,7 +241,7 @@ IonRuntime::generateInvalidator(JSContext *cx)
     masm.pop(s1); // Get the frameSize outparam.
 
     // Pop the machine state and the dead frame.
-    masm.lea(Operand(sp, s1, TimesOne, sizeof(InvalidationBailoutStack)), sp);
+    masm.lea(Operand(sp, s1, TimesOne, sizeof(InvalidationBailoutStack)), sp);//caution FloatRegisters::Total
 
     masm.generateBailoutTail(t7);
 
@@ -365,16 +365,17 @@ GenerateBailoutThunk(JSContext *cx, MacroAssembler &masm, uint32 frameClass)
     masm.push(Imm32(frameClass));
 
     // The current stack pointer is the first argument to ion::Bailout.
-    masm.movl(sp, t6);
+    masm.movl(sp, s6);
 
     // Call the bailout function. This will correct the size of the bailout.
-    masm.setupUnalignedABICall(1, t8);
-    masm.passABIArg(t6);
+    masm.setupUnalignedABICall(1, s7);
+    //masm.setupAlignedABICall(1);
+    masm.passABIArg(s6);
     masm.callWithABI(JS_FUNC_TO_DATA_PTR(void *, Bailout));
 
     // Common size of stuff we've pushed.
     const uint32 BailoutDataSize = sizeof(void *) + // frameClass
-                                   sizeof(double) * FloatRegisters::Total/2 +
+                                   sizeof(double) * FloatRegisters::Total +
                                    sizeof(void *) * Registers::Total;
 
     // Remove both the bailout frame and the topmost Ion frame's stack.
@@ -385,9 +386,9 @@ GenerateBailoutThunk(JSContext *cx, MacroAssembler &masm, uint32 frameClass)
         //    frameSize
         //    ... bailoutFrame ...
         masm.addl(Imm32(BailoutDataSize), sp);
-        masm.pop(t8);
+        masm.pop(s7);
         masm.addl(Imm32(sizeof(uint32)), sp);
-        masm.addl(t8, sp);
+        masm.addl(s7, sp);
     } else {
         // Stack is:
         //    ... frame ...
@@ -397,7 +398,7 @@ GenerateBailoutThunk(JSContext *cx, MacroAssembler &masm, uint32 frameClass)
         masm.addl(Imm32(BailoutDataSize + sizeof(void *) + frameSize), sp);
     }
 
-    masm.generateBailoutTail(t7);
+    masm.generateBailoutTail(s6);
 }
 
 IonCode *
