@@ -95,6 +95,13 @@ namespace JSC {
                 1:
 
                 OR:
+                  nop
+                  nop
+                  bal offset
+                  nop
+                1:
+
+                OR:
                   lui $25, 0
                   ori $25, $25, 0
                   jalr  $25
@@ -121,9 +128,15 @@ namespace JSC {
                 offset = (*insn & 0x0000ffff) << 16; // lui
                 offset |= (*(insn + 1) & 0x0000ffff); // ori
             }
-        }else{
+        }
+        else{
             insn += 3;
             insn += 2;
+            if ((*(insn + 2) & 0xffff0000) == 0x04110000) { // bal
+                offset = (*(insn + 2) & 0xffff);
+                if(offset == 0xffff)
+                    offset = -1; // stop offset
+            }else
             if ((*(insn + 2) & 0xfc000000) == 0x0c000000) { // jal
                 offset = (*(insn + 2) & 0x03ffffff) << 2;}
             else{
@@ -131,7 +144,6 @@ namespace JSC {
                 offset = (*insn & 0x0000ffff) << 16;
                 offset |= (*(insn + 1) & 0x0000ffff);
             }
-            {}
         }
         ASSERT(offset != -2);
         if (offset == -1)
@@ -151,12 +163,14 @@ namespace JSC {
         MIPSWord* toPos = reinterpret_cast<MIPSWord*>(to.m_offset);
 
         insn -= 3;
-        if ((!(*(insn - 1)) && !(*(insn - 2)) && !(*(insn - 3)) && !(*(insn - 5))) ||
-                (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x03200008))){
+        if (((*(insn + 1) & 0xffff0000) != 0x04110000) && ((!(*(insn - 1)) && !(*(insn - 2)) && !(*(insn - 3)) && !(*(insn - 5))) ||
+                (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x03200008)))){
             ASSERT((!(*(insn - 1)) && !(*(insn - 2)) && !(*(insn - 3)) && !(*(insn - 5))) ||
                 (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x03200008)));
             insn = insn - 6;
             linkWithOffset(insn, toPos);
+        }else if (((*(insn + 1) & 0xffff0000) == 0x04110000) && !(*(insn -1 )) && !(*(insn))) {
+            *(insn + 1) |= to.m_offset & 0xffff; //bal temp offset
         }else{
             insn += 3;
             ASSERT((((*(insn - 2) & 0xfc000000) == 0x0c000000) && !(*(insn - 3)) && !(*(insn - 4))) || 
@@ -174,8 +188,8 @@ namespace JSC {
         MIPSWord* toPos = reinterpret_cast<MIPSWord*>(reinterpret_cast<intptr_t>(m_buffer.data()) + to.m_offset);
 
         insn -= 3;
-        if ((!(*(insn - 1)) && !(*(insn - 2)) && !(*(insn - 3)) && !(*(insn - 5))) ||
-                (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x03200008))){
+        if (((*(insn + 1) & 0xffff0000) != 0x04110000) && ((!(*(insn - 1)) && !(*(insn - 2)) && !(*(insn - 3)) && !(*(insn - 5))) ||
+                (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x03200008)))){
             ASSERT((!(*(insn - 1)) && !(*(insn - 2)) && !(*(insn - 3)) && !(*(insn - 5))) ||
                 (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x03200008)));
             insn = insn - 6;
@@ -183,6 +197,7 @@ namespace JSC {
         }else{
             insn += 3;
             ASSERT((((*(insn - 2) & 0xfc000000) == 0x0c000000) && !(*(insn - 3)) && !(*(insn - 4))) || 
+                   (((*(insn - 2) & 0xffff0000) == 0x04110000) && !(*(insn - 3)) && !(*(insn - 4))) || 
             (((*(insn - 4) & 0xffe00000) == 0x3c000000) && ((*(insn - 3) & 0xfc000000) == 0x34000000) && (*(insn - 2) == 0x0320f809)));
             
             linkCallInternal(insn, toPos);
@@ -596,6 +611,12 @@ namespace JSC {
             /* jalr $25 */
             *(insn + 2) = 0x0000f809 | (MIPSRegisters::t9 << OP_SH_RS);
             return 3 * sizeof(MIPSWord);
+        } else if((*(insn + 2) & 0xffff0000) == 0x04110000) {//bal
+            intptr_t offset = reinterpret_cast<intptr_t>(to) >> 2;
+            if(reinterpret_cast<intptr_t>(to) > 0x100000)
+                offset = reinterpret_cast<intptr_t>(to) - reinterpret_cast<intptr_t>(from);
+            *(insn + 2) = 0x04110000 | ((offset >> 2) & 0xffff);
+            return sizeof(MIPSWord);
         }
 
         ASSERT((*insn & 0xffe00000) == 0x3c000000); // lui

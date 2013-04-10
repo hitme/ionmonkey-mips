@@ -50,6 +50,16 @@ MacroAssemblerMIPS::nearCall()
 MacroAssemblerMIPS::Call 
 MacroAssemblerMIPS::call()
 {
+    m_assembler.lui(MIPSRegisters::t9, 0);
+    m_assembler.ori(MIPSRegisters::t9, MIPSRegisters::t9, 0);
+    m_assembler.jalr(MIPSRegisters::t9);
+    m_assembler.nop();
+    return Call(m_assembler.newJmpSrc(), Call::Linkable);
+}
+
+MacroAssemblerMIPS::Call 
+MacroAssemblerMIPS::callRel()
+{
     m_assembler.nop();
     m_assembler.nop();
     m_assembler.bal(0);

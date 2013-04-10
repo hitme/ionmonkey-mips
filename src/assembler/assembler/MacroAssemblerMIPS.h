@@ -2031,6 +2031,8 @@ public:
 
     Call call();
 
+    Call callRel();
+
     Call call(RegisterID target);
 
     Call call(Address address);
