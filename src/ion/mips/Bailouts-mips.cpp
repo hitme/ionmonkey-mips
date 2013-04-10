@@ -71,10 +71,8 @@ IonBailoutIterator::IonBailoutIterator(const IonActivationIterator &activations,
   : IonFrameIterator(activations),
     machine_(bailout->machine())
 {
-    uint8 *sp = bailout->parentStackPointer();
+    uint8 *sp = bailout->parentStackPointer();//off of snapshotOffset_
     uint8 *fp = sp + bailout->frameSize();
-    if(bailout->frameClass() == FrameSizeClass::None())
-        fp = sp + sizeof(BailoutStack);
 
     current_ = fp;
     type_ = IonFrame_OptimizedJS;

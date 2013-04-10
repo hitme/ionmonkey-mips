@@ -522,6 +522,11 @@ public:
         emitInst(0x0000000d | ((value & 0x3ff) << OP_SH_CODE));
     }
 
+    void bal(int imm)
+    {
+        emitInst(0x04110000 | (imm & 0xffff));
+    }
+
     void bgez(RegisterID rs, int imm)
     {
         emitInst(0x04010000 | (rs << OP_SH_RS) | (imm & 0xffff));

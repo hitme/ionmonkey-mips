@@ -40,7 +40,7 @@ static const int32 NUNBOX32_PAYLOAD_OFFSET      = 0;
 // it should probably be 8 bytes, a mov of an immediate into r12 (not
 // allocated presently, or ever) followed by a branch to the apropriate code.
 //ok static const uint32 BAILOUT_TABLE_ENTRY_SIZE    = 4;
-static const uint32 BAILOUT_TABLE_ENTRY_SIZE    = 4*11;
+static const uint32 BAILOUT_TABLE_ENTRY_SIZE    = 4*4; //see to Trampoline-mips.cpp:generateBailoutTable
 
 class Registers
 {
