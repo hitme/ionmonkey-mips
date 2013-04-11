@@ -24,13 +24,14 @@ namespace ion {
 class BailoutStack
 {
     uintptr_t frameClassId_;
+    uintptr_t padding;
     double    fpregs_[FloatRegisters::Total];
     uintptr_t regs_[Registers::Total];
     union {
         uintptr_t frameSize_;
         uintptr_t tableOffset_;
     };
-    uintptr_t snapshotOffset_;
+    uintptr_t snapshotOffset_;//maybe unaligned
 
   public:
     FrameSizeClass frameClass() const {

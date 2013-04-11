@@ -1122,6 +1122,7 @@ class Assembler
     }
     void retn(Imm32 n);
     JmpSrc callWithPush();
+    JmpSrc callRelWithPush();
     void call(Label *label);
     void call(const Register &reg);
     void call(const Operand &op);

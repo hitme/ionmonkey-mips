@@ -417,16 +417,25 @@ Assembler::callWithPush()
     return src;
 }
 
+Assembler::JmpSrc
+Assembler::callRelWithPush() 
+{
+    mcss.offsetFromPCToV0(sizeof(int*)*7);//1insns
+    mcss.push(mRegisterID(v0.code()));//2insns
+    JmpSrc src = mcss.callRel().m_jmp;//4insns
+    return src;
+}
+
 void 
 Assembler::call(Label *label) {
     if (label->bound()) {
 //ok            masm.linkJump(mcss.call(), JmpDst(label->offset()));
 //ok    masm.linkJump(mcss.call().m_jmp, JmpDst(label->offset()));
-    masm.linkJump(mcss.callRel().m_jmp, JmpDst(label->offset()));
+    masm.linkJump(callRelWithPush(), JmpDst(label->offset()));
 } else {
 //ok            JmpSrc j = mcss.call();
 //ok        JmpSrc j = mcss.call().m_jmp;
-        JmpSrc j = mcss.callRel().m_jmp;
+        JmpSrc j = callRelWithPush();
         JmpSrc prev = JmpSrc(label->use(j.offset()));
         masm.setNextJump(j, prev);
     }

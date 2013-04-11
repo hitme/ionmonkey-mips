@@ -361,6 +361,8 @@ GenerateBailoutThunk(JSContext *cx, MacroAssembler &masm, uint32 frameClass)
     for (uint32 i = 0; i < FloatRegisters::Total; i += 2)
         masm.movsd(FloatRegister::FromCode(i), Operand(sp, i * sizeof(double)));
 
+    // padding
+    masm.push(Imm32(0));
     // Push the bailout table number.
     masm.push(Imm32(frameClass));
 
@@ -374,7 +376,7 @@ GenerateBailoutThunk(JSContext *cx, MacroAssembler &masm, uint32 frameClass)
     masm.callWithABI(JS_FUNC_TO_DATA_PTR(void *, Bailout));
 
     // Common size of stuff we've pushed.
-    const uint32 BailoutDataSize = sizeof(void *) + // frameClass
+    const uint32 BailoutDataSize = sizeof(void *) * 2 + // frameClass and padding
                                    sizeof(double) * FloatRegisters::Total +
                                    sizeof(void *) * Registers::Total;
 
