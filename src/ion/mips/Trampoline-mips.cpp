@@ -167,7 +167,7 @@ IonRuntime::generateEnterJIT(JSContext *cx)
     //  +4  esi
     //  +0  edi
     // 19 regs saved on mips
-    masm.movl(Operand(sp, ARG_RESULT + 19 * sizeof(void *)), t6);
+    masm.movl(Operand(sp, ARG_RESULT + 17 * sizeof(void *)), t6);
     masm.storeValue(JSReturnOperand, Operand(t6, 0));
 
     /**************************************************************
