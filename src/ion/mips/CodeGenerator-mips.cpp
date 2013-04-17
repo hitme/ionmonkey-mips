@@ -545,10 +545,17 @@ CodeGeneratorMIPS::visitPowHalfD(LPowHalfD *ins)
 bool
 CodeGeneratorMIPS::visitAddI(LAddI *ins)
 {
+//    masm.movl(ToOperand(ins->lhs()), cmpTemp2Register);
+
     if (ins->rhs()->isConstant())
+//        masm.movl(Imm32(ToInt32(ins->rhs())), cmpTempRegister);
         masm.addl(Imm32(ToInt32(ins->rhs())), ToOperand(ins->lhs()));
     else
+//        masm.movl(ToOperand(ins->rhs()), cmpTempRegister);
         masm.addl(ToOperand(ins->rhs()), ToRegister(ins->lhs()));
+
+//    masm.addl(cmpTempRegister, cmpTemp2Register);
+//    masm.addl(cmpTemp2Register, ToRegister(ins->lhs()));
 
     if (ins->snapshot() && !bailoutIf(Assembler::Overflow, ins->snapshot()))
         return false;
@@ -558,10 +565,17 @@ CodeGeneratorMIPS::visitAddI(LAddI *ins)
 bool
 CodeGeneratorMIPS::visitSubI(LSubI *ins)
 {
+//    masm.movl(ToOperand(ins->lhs()), cmpTemp2Register);
+
     if (ins->rhs()->isConstant())
+//        masm.movl(Imm32(ToInt32(ins->rhs())), cmpTempRegister);
         masm.subl(Imm32(ToInt32(ins->rhs())), ToOperand(ins->lhs()));
     else
+//        masm.movl(ToOperand(ins->rhs()), cmpTempRegister);
         masm.subl(ToOperand(ins->rhs()), ToRegister(ins->lhs()));
+
+//    masm.subl(cmpTempRegister, cmpTemp2Register);
+//    masm.addl(cmpTemp2Register, ToRegister(ins->lhs()));
 
     if (ins->snapshot() && !bailoutIf(Assembler::Overflow, ins->snapshot()))
         return false;
