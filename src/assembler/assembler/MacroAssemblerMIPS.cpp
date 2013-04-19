@@ -36,6 +36,84 @@
 
 using namespace JSC;
 
+MacroAssemblerMIPS::Jump 
+MacroAssemblerMIPS::branch32(Condition cond, RegisterID left, RegisterID right)
+{
+    if (cond == Equal || cond == Zero)
+        return branchEqual(left, right);
+    if (cond == NotEqual || cond == NonZero)
+        return branchNotEqual(left, right);
+    if (cond == Above) {
+        m_assembler.sltu(cmpTempRegister, right, left);
+        return branchNotEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    if (cond == AboveOrEqual) {
+        m_assembler.sltu(cmpTempRegister, left, right);
+        return branchEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    if (cond == Below) {
+        m_assembler.sltu(cmpTempRegister, left, right);
+        return branchNotEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    if (cond == BelowOrEqual) {
+        m_assembler.sltu(cmpTempRegister, right, left);
+        return branchEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    if (cond == GreaterThan) {
+        m_assembler.slt(cmpTempRegister, right, left);
+        return branchNotEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    if (cond == GreaterThanOrEqual) {
+        m_assembler.slt(cmpTempRegister, left, right);
+        return branchEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    if (cond == LessThan) {
+        m_assembler.slt(cmpTempRegister, left, right);
+        return branchNotEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    if (cond == LessThanOrEqual) {
+        m_assembler.slt(cmpTempRegister, right, left);
+        return branchEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    if (cond == Overflow) {
+        /*
+            xor     cmpTemp, left, right
+            bgez    No_overflow, cmpTemp    # same sign bit -> no overflow
+            nop
+            subu    cmpTemp, left, right
+            xor     cmpTemp, cmpTemp, left
+            bgez    No_overflow, cmpTemp    # same sign bit -> no overflow
+            nop
+            b       Overflow
+            nop
+            nop
+            nop
+            nop
+            nop
+          No_overflow:
+        */
+        m_assembler.addu(dataTempRegister, MIPSRegisters::zero, left);
+        m_assembler.xorInsn(cmpTempRegister, dataTempRegister, right);
+        m_assembler.bgez(cmpTempRegister, 11);
+        m_assembler.nop();
+        m_assembler.subu(cmpTempRegister, dataTempRegister, right);
+        m_assembler.xorInsn(cmpTempRegister, cmpTempRegister, dataTempRegister);
+        m_assembler.bgez(cmpTempRegister, 7);
+        m_assembler.nop();
+        return jump();
+    }
+    if (cond == Signed) {
+        m_assembler.subu(cmpTempRegister, left, right);
+        // Check if the result is negative.
+        m_assembler.slt(cmpTempRegister, cmpTempRegister,
+                        MIPSRegisters::zero);
+        return branchNotEqual(cmpTempRegister, MIPSRegisters::zero);
+    }
+    ASSERT(0);
+
+    return Jump();
+}
+
 MacroAssemblerMIPS::Call 
 MacroAssemblerMIPS::nearCall()
 {
